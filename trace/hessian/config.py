@@ -38,7 +38,7 @@ class HessianConfig:
         if self.num_batches <= 0:
             raise ValueError("num_batches must be positive")
 
-        if self.tolerance <= 0:
+        if self.tol <= 0:
             raise ValueError("tolerance must be positive")
 
         if self.max_iterations <= 0:

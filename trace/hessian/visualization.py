@@ -281,9 +281,10 @@ class HessianVisualizer:
             )
 
     @staticmethod
-    def _find_common_steps(component_history: Dict[str, Dict[int, Dict[str, Any]]]) -> List[int]:
+    def _find_common_steps(component_history: Dict[str, Dict[int, Dict[str, Any]]]) -> List[int]: # todo: this is not working
         """Find common steps across all components."""
         common_steps = set()
+        print('component_history:', component_history)
         for component, history in component_history.items():
             if not common_steps:
                 common_steps = set(int(step) for step in history.keys())
