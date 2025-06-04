@@ -23,7 +23,7 @@ class HessianConfig:
     track_train_val_landscape_divergence: bool = True
 
     # Computation settings
-    tolerance: float = 0.001
+    tol: float = 0.001 # tol for eigenvalue convergence
     max_iterations: int = 1000
 
     # Output settings
