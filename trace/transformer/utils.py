@@ -3,32 +3,6 @@ import torch.nn as nn
 from typing import List, Optional
 
 
-# def freeze_ffn(model: nn.Module, freeze: bool = True) -> None:
-#     """
-#     Freeze or unfreeze feed-forward network parameters in a transformer model.
-#
-#     Args:
-#         model: Transformer model to modify
-#         freeze: Whether to freeze (True) or unfreeze (False) parameters
-#     """
-#     for name, param in model.named_parameters():
-#         if 'feed_forward' in name or 'ffn' in name:
-#             param.requires_grad = not freeze
-
-
-# def unfreeze_ffn_layer(model: nn.Module, layer_idx: int) -> None:
-#     """
-#     Unfreeze feed-forward network parameters for a specific layer.
-#
-#     Args:
-#         model: Transformer model to modify
-#         layer_idx: Index of the layer to unfreeze
-#     """
-#     for name, param in model.named_parameters():
-#         if f'layers.{layer_idx}' in name and 'feed_forward' in name:
-#             param.requires_grad = True
-
-
 def attach_hooks(model: nn.Module, names: Optional[List[str]] = None) -> nn.Module:
     """
     Attach gradient monitoring hooks to model parameters.
