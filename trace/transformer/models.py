@@ -234,8 +234,15 @@ class Transformer(nn.Module):
         return grad
 
     def initialize_weights(self):
-        for name, parm in self.named_parameters():
-            continue
+        """
+        Initialize model weights using Xavier uniform initialization.
+        """
+        for name, param in self.named_parameters():
+            if 'weight' in name:
+                nn.init.xavier_uniform_(param)
+            elif 'bias' in name:
+                nn.init.zeros_(param)
+
     def freeze_layer(self, layer_idx: int, freeze: bool = True,
                      freezing_components: Optional[List[str]] = None) -> None:
         """
