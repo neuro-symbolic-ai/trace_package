@@ -1,7 +1,7 @@
 import re
 from typing import List, Tuple, Dict
 from abc import ABC, abstractmethod
-#todo change types to something like vocab
+
 try:
     import nltk
     from nltk import pos_tag
@@ -374,22 +374,3 @@ class SemanticTagger(BaseTagger):
                     adjusted[i] = (token, "DESTINATION")
 
         return adjusted
-
-
-# Legacy compatibility functions
-def _tokenize_and_tag(text: str) -> List[Tuple[str, str]]:
-    """Legacy function for POS tagging."""
-    tagger = POSTagger(granularity='detailed')
-    return tagger.tag_text(text)
-
-
-def _tokenize_and_tag_semantic_roles(text: str) -> List[Tuple[str, str]]:
-    """Legacy function for semantic role tagging."""
-    tagger = SemanticTagger(granularity='full')
-    return tagger.tag_text(text)
-
-
-def _tokenize_and_tag_semantic_roles_reduced(text: str) -> List[Tuple[str, str]]:
-    """Legacy function for reduced semantic role tagging."""
-    tagger = SemanticTagger(granularity='reduced')
-    return tagger.tag_text(text)
