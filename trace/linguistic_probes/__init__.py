@@ -5,7 +5,7 @@ from .taggers import POSTagger, SemanticTagger
 from .trackers import POSPerformanceTracker, SemanticPerformanceTracker
 from .visualization import ProbesVisualizer
 from .utils import (
-    extract_hidden_representations,
+    extract_hidden_representations_with_pos_semantic,
     prepare_probing_dataset,
     create_one_hot_labels
 )
@@ -31,7 +31,7 @@ __all__ = [
     'ProbesVisualizer',
 
     # Utility functions
-    'extract_hidden_representations',
+    'extract_hidden_representations_with_pos_semantic',
     'prepare_probing_dataset',
     'create_one_hot_labels',
 
