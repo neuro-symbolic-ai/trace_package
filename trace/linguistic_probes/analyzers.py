@@ -112,7 +112,12 @@ class BaseAnalyzer:
 
             # Save probe if requested
             if self.config.save_probes and self.config.save_path:
-                layer_save_path = f"{self.config.save_path}_{self.get_analysis_type()}_layer{layer_idx}.pt"
+                name_layer_idx = str(layer_idx) if isinstance(layer_idx, int) else f"{layer_idx[0]}_{layer_idx[1]}"
+                name_layer_idx = name_layer_idx.replace("(", "").replace(")", "")
+                name_layer_idx = name_layer_idx.replace(",", "_")
+                name_layer_idx = name_layer_idx.replace(" ", "")
+                name_layer_idx = name_layer_idx.replace("'", "")
+                layer_save_path = f"{self.config.save_path}_{self.get_analysis_type()}_layer{name_layer_idx}.pt"
                 probe.save(layer_save_path)
                 print(f"Saved {self.get_analysis_type()} probe for layer {layer_idx} to {layer_save_path}")
 
