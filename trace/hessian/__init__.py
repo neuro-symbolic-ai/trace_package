@@ -9,12 +9,12 @@ from .utils import (
     get_hessian_eigenvectors
 )
 
-# Legacy function imports for backward compatibility with pre_training.py
-from .analysis import (
-    compute_hessian_gradient_alignment,
-    measure_train_val_landscape_divergence,
-    compute_detailed_hessian_metrics
-)
+# # Legacy function imports for backward compatibility with pre_training.py
+# from .analysis import (
+#     compute_hessian_gradient_alignment,
+#     measure_train_val_landscape_divergence,
+#     compute_detailed_hessian_metrics
+# )
 from .visualization import (
     plot_hessian_evolution,
     plot_component_comparison,
@@ -38,9 +38,9 @@ __all__ = [
 
     # Detailed functions
     'compute_component_hessians',
-    'compute_hessian_gradient_alignment',
-    'measure_train_val_landscape_divergence',
-    'compute_detailed_hessian_metrics',
+    # 'compute_hessian_gradient_alignment',
+    # 'measure_train_val_landscape_divergence',
+    # 'compute_detailed_hessian_metrics',
 
     # Visualization functions
     'plot_hessian_evolution',
