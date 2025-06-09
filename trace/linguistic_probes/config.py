@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 
 @dataclass
@@ -19,7 +19,7 @@ class LinguisticProbesConfig:
     # Training parameters
     batch_size: int = 32
     device: str = "cpu"  # Device to run probes on (e.g., 'cuda' or 'cpu')
-    num_epochs: int = 10
+    epochs: int = 10
 
     # Analysis toggles
     track_pos: bool = True
@@ -72,14 +72,14 @@ class LinguisticProbesConfig:
         """Create a default configuration for linguistic probes."""
         return cls(
             probe_type="linear",
-            num_classes=2,
+            # num_classes=2,
             hidden_dim=128,
             lr=0.001,
             dropout=0.1,
             criterion="cross_entropy",
             batch_size=32,
             device="cpu",
-            num_epochs=10,
+            epochs=10,
             pos_granularity="detailed",
             semantic_granularity="detailed",
             track_pos=True,
@@ -102,7 +102,6 @@ class LinguisticProbesConfig:
         """Create a minimal configuration for basic linguistic probes."""
         return cls(
             probe_type="linear",
-            num_classes=2,
             hidden_dim=64,
             lr=0.001,
             dropout=0.1,
@@ -111,7 +110,7 @@ class LinguisticProbesConfig:
             criterion="cross_entropy",
             batch_size=16,
             device="cpu",
-            num_epochs=5,
+            epochs=5,
             track_pos=False,
             track_semantic=False,
             track_performance_over_time=False,
@@ -127,5 +126,105 @@ class LinguisticProbesConfig:
             log_dir=None
         )
 
+
+
+    @classmethod
+    def pos_only(cls, **kwargs) -> 'LinguisticProbesConfig':
+        """Create configuration for POS probing only."""
+        defaults = {
+            'track_pos': True,
+            'track_semantic': False,
+            'pos_granularity': 'detailed'
+        }
+        defaults.update(kwargs)
+        return cls(**defaults)
+
+    @classmethod
+    def comprehensive(cls, **kwargs) -> 'LinguisticProbesConfig':
+        """Create a comprehensive configuration for both POS and semantic probing."""
+        defaults = {
+            'track_pos': True,
+            'track_semantic': True,
+            'pos_granularity': 'detailed',
+            'semantic_granularity': 'detailed'
+        }
+        defaults.update(kwargs)
+        return cls(**defaults)
+
+    @classmethod
+    def semantic_only(cls, **kwargs) -> 'LinguisticProbesConfig':
+        """Create configuration for semantic probing only."""
+        defaults = {
+            'track_pos': False,
+            'track_semantic': True,
+            'semantic_granularity': 'detailed'
+        }
+        defaults.update(kwargs)
+        return cls(**defaults)
+
+    def get_pos_categories(self) -> Dict[str, int]:
+        """Get POS categories based on granularity setting."""
+        if self.pos_granularity == 'basic':
+            return {
+                "NOUN": 0,
+                "VERB": 1,
+                "ADJ": 2,
+                "ADV": 3,
+                "PREP": 4,
+                "DET": 5,
+                "CONJ": 6,
+                "OTHER": 7
+            }
+        elif self.pos_granularity == 'detailed':  # detailed
+            return {
+                "NOUN": 0,
+                "TRANSITIVE_VERB": 1,
+                "INTRANSITIVE_VERB": 2,
+                "COMMUNICATION_VERB": 3,
+                "MOTION_VERB": 4,
+                "CHANGE_VERB": 5,
+                "ADJ": 6,
+                "ADV": 7,
+                "LOCATION": 8,
+                "TEMP": 9,
+                "PREP": 10,
+                "RESULT": 11,
+                "CONJ": 12,
+                "OTHER": 13
+            }
+        # todo: elif 'nltk:
+
+    def get_semantic_categories(self) -> Dict[str, int]:
+        """Get semantic categories based on granularity setting."""
+        if self.semantic_granularity == 'basic':
+            return {
+                "AGENT": 0,
+                "PATIENT": 1,
+                "ACTION": 2,
+                "LOCATION": 3,
+                "RELATION": 4,
+                "CONNECTOR": 5,
+                "RESULT": 6,
+                "OTHER": 7
+            }
+        elif self.semantic_granularity == 'detailed':
+            return {
+                "AGENT": 0,
+                "PATIENT": 1,
+                "ACTION": 2,
+                "MOTION": 3,
+                "COMMUNICATION": 4,
+                "CHANGE": 5,
+                "LOCATION": 6,
+                "DESTINATION": 7,
+                "TIME": 8,
+                "RESULT": 9,
+                "PROPERTY": 10,
+                "MANNER": 11,
+                "RELATION": 12,
+                "CONNECTOR": 13,
+                "OTHER": 14
+            }
+        # todo: elif 'nltk:
 
 
