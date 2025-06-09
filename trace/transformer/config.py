@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import torch
 
 '''
 Inspired by https://github.com/NVIDIA/Megatron-LM/blob/main/megatron/core/transformer/transformer_config.py
@@ -8,7 +9,7 @@ and https://github.com/TransformerLensOrg/TransformerLens/blob/main/transformer_
 but simplified for our use case. 
 '''
 @dataclass
-class TransformerConfig: # todo: make these customizable
+class TransformerConfig:
     """
     Configuration class for transformer models.
 
@@ -33,6 +34,7 @@ class TransformerConfig: # todo: make these customizable
     # Special options
     no_fnn: bool = False  # Disable feed-forward networks
     freeze_ffn: bool = False  # Freeze feed-forward parameters
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
     def __post_init__(self):
         """Validate configuration parameters."""
