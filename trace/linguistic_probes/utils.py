@@ -377,24 +377,3 @@ def print_label_distribution(
             percentage = (count / total) * 100 if total > 0 else 0
             print(f"{name:<15}: {count:>6} ({percentage:>5.1f}%)")
 
-
-# # Legacy compatibility functions
-# def create_one_hot_pos_labels_legacy(input_ids, tokenizer, pos_tag_fn=None):
-#     """Legacy function for creating POS labels."""
-#     config = LinguisticProbesConfig.default()
-#     config.pos_granularity = 'detailed'
-#     return create_one_hot_pos_labels(input_ids, tokenizer, config)
-
-
-# def create_one_hot_semantic_labels_legacy(input_ids, tokenizer, semantic_tag_fn=None):
-#     """Legacy function for creating semantic labels."""
-#     config = LinguisticProbesConfig.default()
-#     config.semantic_granularity = 'full'
-#     return create_one_hot_semantic_labels(input_ids, tokenizer, config)
-
-#
-# def create_one_hot_semantic_labels_reduced_legacy(input_ids, tokenizer, semantic_tag_fn=None):
-#     """Legacy function for creating reduced semantic labels."""
-#     config = LinguisticProbesConfig.default()
-#     config.semantic_granularity = 'reduced'
-#     return create_one_hot_semantic_labels(input_ids, tokenizer, config)
