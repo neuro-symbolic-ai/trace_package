@@ -444,8 +444,13 @@ class ProbesVisualizer:
                 plt.tight_layout()
 
                 if save_plot:
+                    name_layer_idx = str(layer_str) if isinstance(layer_str, int) else f"{layer_str[0]}_{layer_str[1]}"
+                    name_layer_idx = name_layer_idx.replace("(", "").replace(")", "")
+                    name_layer_idx = name_layer_idx.replace(",", "_")
+                    name_layer_idx = name_layer_idx.replace(" ", "")
+                    name_layer_idx = name_layer_idx.replace("'", "")
                     plt.savefig(
-                        os.path.join(plots_dir, f"{model_name}_{layer_str}_tag{tag_idx}_{label_names[tag_idx]}.png"),
+                        os.path.join(plots_dir, f"{model_name}_{name_layer_idx}_tag{tag_idx}_{label_names[tag_idx]}.png"),
                         dpi=300, bbox_inches='tight'
                     )
                 plt.show()
@@ -469,8 +474,13 @@ class ProbesVisualizer:
             plt.tight_layout()
 
             if save_plot:
+                name_layer_idx = str(layer_str) if isinstance(layer_str, int) else f"{layer_str[0]}_{layer_str[1]}"
+                name_layer_idx = name_layer_idx.replace("(", "").replace(")", "")
+                name_layer_idx = name_layer_idx.replace(",", "_")
+                name_layer_idx = name_layer_idx.replace(" ", "")
+                name_layer_idx = name_layer_idx.replace("'", "")
                 plt.savefig(
-                    os.path.join(plots_dir, f"{model_name}_{layer_str}_all_tags_combined.png"),
+                    os.path.join(plots_dir, f"{model_name}_{name_layer_idx}_all_tags_combined.png"),
                     dpi=300, bbox_inches='tight'
                 )
             plt.show()
