@@ -1,14 +1,10 @@
 
-# extract_hidden_states
-
-# compute_intrinsic_dimension
 from typing import Optional, List
 from dataclasses import dataclass
 
-from trace.intrisic_dimensions.config import IntrinsicDimensionsConfig
-
-
-from trace.intrisic_dimensions.utils import (
+from .config import IntrinsicDimensionsConfig
+from .visualization import IntrinsicDimensionsVisualizer
+from .utils import (
     extract_hidden_representations,
     compute_intrinsic_dimensions
 )
@@ -22,10 +18,22 @@ class IntrinsicDimensionAnalyzer:
     using the TwoNN method from skdim.
     """
 
-    def __init__(self, config: Optional['IntrinsicDimensionsConfig'] = None):
-        self.config = config or IntrinsicDimensionsConfig()
+    def __init__(self, config: Optional[IntrinsicDimensionsConfig] = None):
+        self.config = config or IntrinsicDimensionsConfig.default()
+        if hasattr(self.config, 'log_dir') and self.config.log_dir is None:
+            self.config.log_dir = "./plots/intrinsic_dimensions"
+        else:
+            log_dir = self.config.log_dir if hasattr(self.config, 'log_dir') else None
+        self.visualizer = IntrinsicDimensionsVisualizer(
+            self.config.log_dir if hasattr(self.config, 'log_dir') else log_dir,
+            self.config
+        ) if getattr(self.config, 'save_visualizations', True) else None
 
-    def analyze(self, model, data_loader, layers: Optional[List[int]] = None) -> dict:
+    def analyze(self,
+                model,
+                data_loader,
+                layers: Optional[List[int]] = None,
+                model_name: str = "") -> dict:
         """
         Analyze intrinsic dimensions of the model on the provided data loader.
 
@@ -37,11 +45,18 @@ class IntrinsicDimensionAnalyzer:
         Returns:
             Dictionary containing intrinsic dimensions for each layer.
         """
-
-        hidden_states = extract_hidden_representations(model, data_loader, layers)[0]
+        print("Starting intrinsic dimension analysis...")
+        if layers is not None:
+            self.config.layers_to_analyze = layers
+        print("Extracting hidden representations...")
+        hidden_states, _, _ = extract_hidden_representations(model, data_loader, layers)
+        print("Computing intrinsic dimensions...")
         intrinsic_dimensions = compute_intrinsic_dimensions(hidden_states, self.config)
 
-        return {
-            "intrinsic_dimensions": intrinsic_dimensions,
-            "layers": layers or list(range(len(hidden_states)))
-        }
+        if self.visualizer:
+            print("Visualizing intrinsic dimensions...")
+            self.visualizer.generate_all_visualizations(intrinsic_dimensions, model_name)
+        return intrinsic_dimensions
+
+
+

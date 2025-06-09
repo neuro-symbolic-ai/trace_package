@@ -1,4 +1,4 @@
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Tuple
 
 import torch
 from torch.utils.data import DataLoader
@@ -14,7 +14,7 @@ def extract_hidden_representations(
         layer_indices: Optional[Union[List[int], Dict[str, List[int]]]] = None,
         tokenizer=None,
         config: Optional[IntrinsicDimensionsConfig] = None,
-) -> tuple:
+) -> Tuple[Dict[Tuple[int, str], torch.Tensor], None, None]:
     """
     Extract hidden representations from specified transformer layers.
 
@@ -152,10 +152,10 @@ def extract_hidden_representations(
 
 
 def compute_intrinsic_dimensions(
-        hidden_states: Dict[Union[int, str], torch.Tensor],
+        hidden_states: Dict[Tuple[int, str], torch.Tensor],
         config: IntrinsicDimensionsConfig,
         device: str = None
-) -> Dict[str, float]:
+) -> Dict[Tuple[int, str], float]:
     """
     Compute intrinsic dimensions for given hidden states.
 
@@ -168,11 +168,10 @@ def compute_intrinsic_dimensions(
         Dictionary with intrinsic dimension results
     """
     results = {}
-    nn_2 = config.nn_2
     for layer_name, layer_hidden in hidden_states.items():
         layer_data = layer_hidden.detach().cpu().numpy()
         layer_data = layer_data.reshape(layer_data.shape[0], -1)
-        results[(layer_name)] = nn_2.fit_transform(layer_data)
+        results[layer_name] = config.id_estimator.fit_transform(layer_data)
 
     # for key, states in hidden_states.items():
     #     # Move to device
@@ -185,3 +184,34 @@ def compute_intrinsic_dimensions(
     #     results[str(key)] = id_result.intrinsic_dimension_
 
     return results
+
+
+def average_intrinsic_dimension(
+        intrinsic_dimensions: Dict[Tuple[int, str], float],
+        layer_indices: Optional[List[Tuple[int, str]]] = None
+) -> float:
+    """
+    Compute the average intrinsic dimension across specified layers.
+
+    Args:
+        intrinsic_dimensions: Dictionary of intrinsic dimensions for each layer
+        layer_indices: Optional list or dict of layer indices to average over
+
+    Returns:
+        Average intrinsic dimension
+    """
+    if layer_indices is None:
+        layer_indices = list(intrinsic_dimensions.keys())
+
+    total_id = 0.0
+    count = 0
+
+    for layer in layer_indices:
+        if layer in intrinsic_dimensions:
+            total_id += intrinsic_dimensions[layer]
+            count += 1
+
+    if count == 0:
+        return 0.0
+
+    return total_id / count

@@ -26,6 +26,9 @@ class IntrinsicDimensionsConfig:
     max_samples: Optional[int] = None  # Limit samples for memory efficiency
     flatten_sequence: bool = True  # Whether to flatten sequence dimension
 
+    save_visualizations: bool = True  # Whether to save visualizations
+    log_dir: Optional[str] = None
+
     def __post_init__(self):
         """Validate configuration parameters and create ID estimator."""
         if self.model_type not in ['encoder_only', 'decoder_only', 'encoder_decoder']:
