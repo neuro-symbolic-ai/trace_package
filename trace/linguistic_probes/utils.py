@@ -32,13 +32,13 @@ def extract_hidden_representations(
         Tuple of (hidden_states_dict, pos_labels, semantic_labels)
     """
     model.eval()
-
+    print('Initial layer indices:', layer_indices)
     # Set default layer indices
     if layer_indices is None:
         if model.model_type == 'encoder_only' and hasattr(model.encoder, 'layers'):
-            layer_indices = {'encoder': [0]}  # Default to first layer
+            layer_indices = {'encoder':  list(range(len(model.encoder.layers)))}  # Default to first layer
         elif model.model_type == 'decoder_only' and hasattr(model.decoder, 'layers'):
-            layer_indices = {'decoder': [0]}  # Default to first layer
+            layer_indices = {'decoder': list(range(len(model.decoder.layers)))}  # Default to first layer
         elif model.model_type == 'encoder_decoder':
             encoder_layers = list(range(len(model.encoder.layers))) if hasattr(model.encoder, 'layers') else [0]
             decoder_layers = list(range(len(model.decoder.layers))) if hasattr(model.decoder, 'layers') else [0]
@@ -54,6 +54,8 @@ def extract_hidden_representations(
             layer_indices = {'decoder': layer_indices}
     elif isinstance(layer_indices, dict):
         layer_indices = layer_indices
+
+    print(f"Extracting hidden states from updated layers: {layer_indices}")
 
     # Initialize hidden states dictionary
     hidden_dict = {}
@@ -91,7 +93,7 @@ def extract_hidden_representations(
                 # For encoder-decoder models, use tuple keys
                 key = (index, layer_type)
             else:
-                key = index
+                key = index(1) if isinstance(index, tuple) else index
             hidden = output[0] if isinstance(output, tuple) else output
             hidden_dict[key].append(hidden.detach().cpu())
         return hook
@@ -100,12 +102,13 @@ def extract_hidden_representations(
 
     # Register hooks based on model architecture
     if model.model_type != 'encoder_decoder':
-        for layer_index in layer_indices:
+        for layer_index in layer_indices['encoder'] if model.model_type == 'encoder_only' else layer_indices['decoder']:
+            print(f"Registering hook for layer {layer_index}")
             try:
                 if  model.model_type == 'encoder_only' and hasattr(model.encoder, 'layers'):
-                    handle = model.encoder.layers[layer_index(1)].register_forward_hook(save_hidden_state(layer_index))
+                    handle = model.encoder.layers[layer_index].register_forward_hook(save_hidden_state(layer_index, 'encoder'))
                 elif model.model_type == 'decoder_only' and hasattr(model.decoder, 'layers'):
-                    handle = model.decoder.layers[layer_index(1)].register_forward_hook(save_hidden_state(layer_index))
+                    handle = model.decoder.layers[layer_index].register_forward_hook(save_hidden_state(layer_index, 'decoder'))
                 handles.append(handle)
             except (AttributeError, IndexError) as e:
                 print(f"Warning: Could not register hook for layer {layer_index}: {e}")
@@ -165,9 +168,10 @@ def extract_hidden_representations(
     # hidden_states = {i: torch.cat(hidden_dict[i], dim=0) for i in layer_indices if hidden_dict[i]}
     hidden_states = {}
     if model.model_type != 'encoder_decoder':
-        for layer_index in layer_indices:
-            key = layer_index if isinstance(layer_index, int) else (layer_index, 'encoder' if model.model_type == 'encoder_only' else 'decoder')
-            if hidden_dict[key]:
+        for layer_index in layer_indices['encoder'] if model.model_type == 'encoder_only' else layer_indices['decoder']:
+            key = (layer_index, 'encoder' if model.model_type == 'encoder_only' else 'decoder')
+            # key = layer_index if isinstance(layer_index, int) else (layer_index, 'encoder' if model.model_type == 'encoder_only' else 'decoder')
+            if key in hidden_dict:
                 hidden_states[key] = torch.cat(hidden_dict[key], dim=0)
     else:
         # For encoder-decoder models, use tuple keys
