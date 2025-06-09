@@ -182,51 +182,5 @@ class HessianAnalyzer:
         return cls(config)
 
 
-# # Legacy compatibility functions for pre_training.py
-# def compute_hessian_gradient_alignment(
-#         model, loss_fn, data_batch, model_type, n_components=10, device=None
-# ):
-#     """Legacy wrapper for gradient alignment analysis."""
-#     config = HessianConfig(
-#         n_components=n_components,
-#         device=device,
-#         track_component_hessian=False,
-#         track_train_val_landscape_divergence=False
-#     )
-#     analyzer = HessianAnalyzer(config)
-#
-#     # Get eigenvalues and eigenvectors first
-#     eigenvalues, eigenvectors = get_hessian_eigenvectors(
-#         model, loss_fn, data_batch,
-#         device=device,
-#         num_batches=100,
-#         n_top_vectors=n_components
-#     )
-#
-#     return analyzer.compute_gradient_alignment(
-#         model, loss_fn, data_batch, model_type, eigenvalues, eigenvectors
-#     )
-#
-#
-# def measure_train_val_landscape_divergence(
-#         model, loss_fn, train_batch, val_batch, model_type, n_components=10, device=None
-# ):
-#     """Legacy wrapper for train-val divergence analysis."""
-#     config = HessianConfig(
-#         n_components=n_components,
-#         device=device,
-#         track_component_hessian=False,
-#         track_gradient_alignment=False
-#     )
-#     analyzer = HessianAnalyzer(config)
-#
-#     return analyzer.compute_train_val_divergence(
-#         model, loss_fn, train_batch, val_batch, model_type
-#     )
-#
-#
-# def compute_detailed_hessian_metrics(eigenvalues):
-#     """Legacy wrapper for detailed metrics computation."""
-#     return HessianMetrics.compute_detailed_hessian_metrics(eigenvalues)
 
 
