@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
+import torch
+
 
 @dataclass
 class HessianConfig:
@@ -29,6 +31,7 @@ class HessianConfig:
     # Output settings
     save_hessian_data: bool = True
     create_plots: bool = True
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     def __post_init__(self):
         """Validate configuration parameters."""
