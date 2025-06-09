@@ -289,32 +289,3 @@ def run_comprehensive_probe_analysis(
 
     return results
 
-
-# Legacy compatibility functions
-def run_semantic_role_probe(
-        model,
-        dataloader,
-        device,
-        layer_indices,
-        tokenizer,
-        hidden_dim=128,
-        lr=1e-3,
-        epochs=3,
-        batch_size=32,
-        save_path=None
-):
-    """Legacy function for semantic role probing."""
-    config = LinguisticProbesConfig(
-        hidden_dim=hidden_dim,
-        lr=lr,
-        epochs=epochs,
-        batch_size=batch_size,
-        save_path=save_path,
-        track_pos=False,
-        track_semantic=True,
-        semantic_granularity='reduced'
-    )
-
-    return run_semantic_probe_analysis(
-        model, dataloader, tokenizer, device, layer_indices, config
-    )
