@@ -195,23 +195,10 @@ def prepare_probing_dataset(
 ) -> DataLoader:
     """
     Prepare a DataLoader for probing experiments.
-
-    Args:
-        hidden_states: Hidden representations [batch_size, seq_len, hidden_dim]
-        labels: Labels [batch_size, num_features]
-        batch_size: Batch size for the DataLoader
-
-    Returns:
-        DataLoader for probing
     """
     B, T, D = hidden_states.shape
-
-    # Flatten across sequence dimension
     X = hidden_states.view(B * T, D)
-
-    # Repeat labels for each token in sequence
     y = labels.repeat_interleave(T, dim=0)
-
     dataset = TensorDataset(X, y)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
@@ -245,7 +232,8 @@ def create_one_hot_labels(
 def create_one_hot_pos_labels(
         input_ids: torch.Tensor,
         tokenizer,
-        config: Optional[LinguisticProbesConfig] = None
+        config: Optional[LinguisticProbesConfig] = None,
+        ignore_index: int = -100
 ) -> torch.Tensor:
     """
     Create one-hot POS labels for input sequences.
@@ -274,7 +262,10 @@ def create_one_hot_pos_labels(
     for sentence_ids in input_ids:
         token_ids = sentence_ids.detach().cpu().tolist()
         # Remove padding tokens
-        token_ids = [t for t in token_ids if t != 0]
+        if tokenizer.pad_token_id is not None:
+            token_ids = [t for t in token_ids if t != tokenizer.pad_token_id and t != ignore_index]  # ignore_index is used in some tokenizers
+        else:
+            token_ids = [t for t in token_ids if t != 0] # we use 0 as the padding token in many tokenizers
         text = tokenizer.decode(token_ids)
         tagged_tokens = tagger.tag_text(text)
 
@@ -295,7 +286,8 @@ def create_one_hot_pos_labels(
 def create_one_hot_semantic_labels(
         input_ids: torch.Tensor,
         tokenizer,
-        config: Optional[LinguisticProbesConfig] = None
+        config: Optional[LinguisticProbesConfig] = None,
+        ignore_index: int = -100
 ) -> torch.Tensor:
     """
     Create one-hot semantic labels for input sequences.
@@ -313,7 +305,7 @@ def create_one_hot_semantic_labels(
 
     # Get semantic categories
     semantic_to_idx = config.get_semantic_categories()
-    print(f"Semantic categories: {semantic_to_idx}")
+    # print(f"Semantic categories: {semantic_to_idx}")
     num_features = len(semantic_to_idx)
 
     # Initialize tagger
@@ -325,7 +317,10 @@ def create_one_hot_semantic_labels(
     for sentence_ids in input_ids:
         token_ids = sentence_ids.detach().cpu().tolist()
         # Remove padding tokens
-        token_ids = [t for t in token_ids if t != 0]
+        if tokenizer.pad_token_id is not None:
+            token_ids = [t for t in token_ids if t != tokenizer.pad_token_id and t != ignore_index]
+        else:
+            token_ids = [t for t in token_ids if t != 0]
         text = tokenizer.decode(token_ids)
         tagged_tokens = tagger.tag_text(text)
 
@@ -347,19 +342,10 @@ def analyze_label_distribution(
         dataloader: DataLoader,
         tokenizer,
         label_type: str,
-        config: Optional[LinguisticProbesConfig] = None
+        config: Optional[LinguisticProbesConfig] = None,
 ) -> Counter:
     """
     Analyze the distribution of labels in a dataset.
-
-    Args:
-        dataloader: DataLoader with input data
-        tokenizer: Tokenizer for decoding
-        label_type: Type of labels to analyze ('pos' or 'semantic')
-        config: Configuration object
-
-    Returns:
-        Counter with label frequencies
     """
     tag_counter = Counter()
 
@@ -380,11 +366,6 @@ def print_label_distribution(
 ) -> None:
     """
     Print formatted label distribution.
-
-    Args:
-        counter: Counter with label frequencies
-        label_names: Names of the labels
-        title: Title for the output
     """
     print(f"\n{title}:")
     print("-" * 50)
@@ -397,23 +378,23 @@ def print_label_distribution(
             print(f"{name:<15}: {count:>6} ({percentage:>5.1f}%)")
 
 
-# Legacy compatibility functions
-def create_one_hot_pos_labels_legacy(input_ids, tokenizer, pos_tag_fn=None):
-    """Legacy function for creating POS labels."""
-    config = LinguisticProbesConfig.default()
-    config.pos_granularity = 'detailed'
-    return create_one_hot_pos_labels(input_ids, tokenizer, config)
+# # Legacy compatibility functions
+# def create_one_hot_pos_labels_legacy(input_ids, tokenizer, pos_tag_fn=None):
+#     """Legacy function for creating POS labels."""
+#     config = LinguisticProbesConfig.default()
+#     config.pos_granularity = 'detailed'
+#     return create_one_hot_pos_labels(input_ids, tokenizer, config)
 
 
-def create_one_hot_semantic_labels_legacy(input_ids, tokenizer, semantic_tag_fn=None):
-    """Legacy function for creating semantic labels."""
-    config = LinguisticProbesConfig.default()
-    config.semantic_granularity = 'full'
-    return create_one_hot_semantic_labels(input_ids, tokenizer, config)
+# def create_one_hot_semantic_labels_legacy(input_ids, tokenizer, semantic_tag_fn=None):
+#     """Legacy function for creating semantic labels."""
+#     config = LinguisticProbesConfig.default()
+#     config.semantic_granularity = 'full'
+#     return create_one_hot_semantic_labels(input_ids, tokenizer, config)
 
-
-def create_one_hot_semantic_labels_reduced_legacy(input_ids, tokenizer, semantic_tag_fn=None):
-    """Legacy function for creating reduced semantic labels."""
-    config = LinguisticProbesConfig.default()
-    config.semantic_granularity = 'reduced'
-    return create_one_hot_semantic_labels(input_ids, tokenizer, config)
+#
+# def create_one_hot_semantic_labels_reduced_legacy(input_ids, tokenizer, semantic_tag_fn=None):
+#     """Legacy function for creating reduced semantic labels."""
+#     config = LinguisticProbesConfig.default()
+#     config.semantic_granularity = 'reduced'
+#     return create_one_hot_semantic_labels(input_ids, tokenizer, config)
