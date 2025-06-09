@@ -1,7 +1,10 @@
 import re
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 from abc import ABC, abstractmethod
 
+from trace.linguistic_probes import LinguisticProbesConfig
+
+# todo : convert the tags into dataclass
 try:
     import nltk
     from nltk import pos_tag
@@ -57,7 +60,8 @@ class POSTagger(BaseTagger):
     Part-of-speech tagger for synthetic and natural text.
     """
 
-    def __init__(self, granularity: str = 'basic', use_nltk_fallback: bool = True):
+    def __init__(self, granularity: str = 'basic', use_nltk_fallback: bool = True, custom_mapping: Dict[str, str] = None,
+                 config:Optional[LinguisticProbesConfig] = None,):
         """
         Initialize POS tagger.
 
@@ -69,7 +73,11 @@ class POSTagger(BaseTagger):
         self.use_nltk_fallback = use_nltk_fallback and NLTK_AVAILABLE
 
         # Define tag mappings based on granularity
-        if granularity == 'basic':
+        if config: # If config is provided, use it to set granularity and get the mapping
+            self.granularity = config.pos_granularity
+            self.pos_mapping = config.get_pos_categories()
+
+        elif granularity == 'basic':
             self.pos_mapping = {
                 "NOUN": "NOUN",
                 "TRANSITIVE_VERB": "VERB",
@@ -87,7 +95,7 @@ class POSTagger(BaseTagger):
                 "DET": "DET",
                 "OTHER": "OTHER"
             }
-        else:  # detailed
+        elif granularity == 'detailed':
             self.pos_mapping = {
                 "NOUN": "NOUN",
                 "TRANSITIVE_VERB": "TRANSITIVE_VERB",
@@ -105,14 +113,17 @@ class POSTagger(BaseTagger):
                 "DET": "DET",
                 "OTHER": "OTHER"
             }
+        elif granularity == 'custom':
+            if custom_mapping is None:
+                raise ValueError("Custom mapping must be provided for 'custom' granularity")
+            self.pos_mapping = custom_mapping
+        else:
+            raise ValueError(f"Unknown granularity: {granularity}. Use 'basic', 'detailed', or 'custom'.")
+
 
     def tag_text(self, text: str) -> List[Tuple[str, str]]:
         """
         Tag text with POS labels using rule-based approach for synthetic tokens.
-
-        Args:
-            text: Input text to tag
-
         Returns:
             List of (token, tag) tuples
         """
@@ -207,6 +218,12 @@ class POSTagger(BaseTagger):
         else:
             return "OTHER"
 
+    def _get_pos_categories(self) -> List[str]:
+        """
+        Get the list of POS categories based on the current granularity.
+        """
+        return list(self.pos_mapping.keys())
+
 
 class SemanticTagger(BaseTagger):
     """
@@ -216,52 +233,59 @@ class SemanticTagger(BaseTagger):
     sentence structure in synthetic data.
     """
 
-    def __init__(self, granularity: str = 'basic'):
+    def __init__(self, granularity: str = 'basic',
+                 custom_mapping: Dict[str, str] = None,
+                 config: Optional[LinguisticProbesConfig] = None
+                 ):
         """
         Initialize semantic tagger.
 
         Args:
             granularity: Level of semantic granularity ('basic' or 'detailed')
         """
-        self.granularity = granularity
+        if config:  # If config is provided, use it to set granularity and get the mapping
+            self.granularity = config.semantic_granularity
+            self.role_mapping = config.get_semantic_categories()
+        else:
+            self.granularity = granularity
 
-        # Define role mappings based on granularity
-        if granularity == 'basic':
-            self.role_mapping = {
-                "AGENT": "AGENT",
-                "PATIENT": "PATIENT",
-                "ACTION": "ACTION",
-                "MOTION": "ACTION",
-                "COMMUNICATION": "ACTION",
-                "CHANGE": "ACTION",
-                "LOCATION": "LOCATION",
-                "DESTINATION": "LOCATION",
-                "TIME": "OTHER",
-                "RESULT": "RESULT",
-                "PROPERTY": "OTHER",
-                "MANNER": "OTHER",
-                "RELATION": "RELATION",
-                "CONNECTOR": "CONNECTOR",
-                "OTHER": "OTHER"
-            }
-        else:  # detailed
-            self.role_mapping = {
-                "AGENT": "AGENT",
-                "PATIENT": "PATIENT",
-                "ACTION": "ACTION",
-                "MOTION": "MOTION",
-                "COMMUNICATION": "COMMUNICATION",
-                "CHANGE": "CHANGE",
-                "LOCATION": "LOCATION",
-                "DESTINATION": "DESTINATION",
-                "TIME": "TIME",
-                "RESULT": "RESULT",
-                "PROPERTY": "PROPERTY",
-                "MANNER": "MANNER",
-                "RELATION": "RELATION",
-                "CONNECTOR": "CONNECTOR",
-                "OTHER": "OTHER"
-            }
+            # Define role mappings based on granularity
+            if granularity == 'basic':
+                self.role_mapping = {
+                    "AGENT": "AGENT",
+                    "PATIENT": "PATIENT",
+                    "ACTION": "ACTION",
+                    "MOTION": "ACTION",
+                    "COMMUNICATION": "ACTION",
+                    "CHANGE": "ACTION",
+                    "LOCATION": "LOCATION",
+                    "DESTINATION": "LOCATION",
+                    "TIME": "OTHER",
+                    "RESULT": "RESULT",
+                    "PROPERTY": "OTHER",
+                    "MANNER": "OTHER",
+                    "RELATION": "RELATION",
+                    "CONNECTOR": "CONNECTOR",
+                    "OTHER": "OTHER"
+                }
+            else:  # detailed
+                self.role_mapping = {
+                    "AGENT": "AGENT",
+                    "PATIENT": "PATIENT",
+                    "ACTION": "ACTION",
+                    "MOTION": "MOTION",
+                    "COMMUNICATION": "COMMUNICATION",
+                    "CHANGE": "CHANGE",
+                    "LOCATION": "LOCATION",
+                    "DESTINATION": "DESTINATION",
+                    "TIME": "TIME",
+                    "RESULT": "RESULT",
+                    "PROPERTY": "PROPERTY",
+                    "MANNER": "MANNER",
+                    "RELATION": "RELATION",
+                    "CONNECTOR": "CONNECTOR",
+                    "OTHER": "OTHER"
+                }
 
     def tag_text(self, text: str) -> List[Tuple[str, str]]:
         """
@@ -296,12 +320,10 @@ class SemanticTagger(BaseTagger):
     def _assign_initial_role(self, clean_token: str, position: int, existing_tags: List[Tuple[str, str]]) -> str:
         """Assign initial semantic role based on token patterns."""
         # AGENT role (typically subject nouns at beginning)
-        if clean_token.startswith("noun") and position == 0:
-            return "AGENT"
-        elif clean_token.startswith("noun") and position < 2 and not any(t[1] == "AGENT" for t in existing_tags):
+        if clean_token.startswith("noun") and (position == 0 or len(existing_tags) < 2):
             return "AGENT"
 
-        # PATIENT role (typically object nouns after verbs)
+        # PATIENT role (typically object nouns after verbs- note we assume verbs are already tagged and exist in existing_tags)
         elif clean_token.startswith("noun") and any(
                 t[1] in ["ACTION", "MOTION", "COMMUNICATION", "CHANGE"] for t in existing_tags):
             return "PATIENT"
@@ -374,3 +396,9 @@ class SemanticTagger(BaseTagger):
                     adjusted[i] = (token, "DESTINATION")
 
         return adjusted
+
+    def _get_semantic_categories(self) -> List[str]:
+        """
+        Get the list of semantic categories based on the current granularity.
+        """
+        return list(self.role_mapping.keys())
