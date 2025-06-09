@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from .config import LinguisticProbesConfig
 from .models import MultiLabelProbe, LinearProbe
-from .utils import extract_hidden_representations, prepare_probing_dataset
+from .utils import extract_hidden_representations_with_pos_semantic, prepare_probing_dataset
 from .visualization import ProbesVisualizer
 
 
@@ -54,7 +54,7 @@ class BaseAnalyzer:
         print(f"Starting {self.get_analysis_type()} probe analysis...")
 
         # Extract representations and labels
-        hidden_states, pos_labels, semantic_labels = extract_hidden_representations(
+        hidden_states, pos_labels, semantic_labels = extract_hidden_representations_with_pos_semantic(
             model, dataloader, self.device, layer_indices, tokenizer, self.config
         )
 
