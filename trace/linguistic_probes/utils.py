@@ -9,13 +9,13 @@ from .taggers import POSTagger, SemanticTagger
 from .config import LinguisticProbesConfig
 
 
-def extract_hidden_representations(
+def extract_hidden_representations_with_pos_semantic(
         model, # did not specify type here to avoid circular import issues and to keep it flexible
         dataloader: DataLoader,
         device: str,
         layer_indices: Optional[Union[List[int], Dict[str, List[int]]]] = None,
         tokenizer=None,
-        config: Optional[LinguisticProbesConfig] = None
+        config: Optional[LinguisticProbesConfig] = None,
 ) -> tuple:
     """
     Extract hidden representations from specified transformer layers.
@@ -93,7 +93,7 @@ def extract_hidden_representations(
                 # For encoder-decoder models, use tuple keys
                 key = (index, layer_type)
             else:
-                key = index(1) if isinstance(index, tuple) else index
+                key = index[1] if isinstance(index, tuple) else index
             hidden = output[0] if isinstance(output, tuple) else output
             hidden_dict[key].append(hidden.detach().cpu())
         return hook
