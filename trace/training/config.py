@@ -74,6 +74,8 @@ class TrainingConfig:
     probe_hidden_dim: int = 128
     probe_lr: float = 0.001
     probe_epochs: int = 10
+    probe_type: str = "multilabel"  # 'linear' or 'multilabel'
+
 
     # Semantic probes tracking
     track_semantic_probes: bool = False
@@ -82,6 +84,7 @@ class TrainingConfig:
     semantic_probe_hidden_dim: int = 128
     semantic_probe_lr: float = 0.001
     semantic_probe_epochs: int = 10
+    semantic_probe_type: str = "multilabel"  # 'linear' or 'multilabel'
 
     # Intrinsic dimensions tracking
     track_intrinsic_dimensions: bool = True
@@ -182,6 +185,7 @@ class TrainingConfig:
         config_dict['probe_hidden_dim'] = getattr(args, 'probe_hidden_dim', 128)
         config_dict['probe_lr'] = getattr(args, 'probe_lr', 0.001)
         config_dict['probe_epochs'] = getattr(args, 'probe_epochs', 10)
+        config_dict['probe_type'] = getattr(args, 'probe_type', 'multilabel')  # 'linear' or 'multilabel'
 
         # Semantic probe tracking
         config_dict['track_semantic_probes'] = getattr(args, 'semantic_track_probe', False)
@@ -190,6 +194,7 @@ class TrainingConfig:
         config_dict['semantic_probe_hidden_dim'] = getattr(args, 'semantic_probe_hidden_dim', 128)
         config_dict['semantic_probe_lr'] = getattr(args, 'semantic_probe_lr', 0.001)
         config_dict['semantic_probe_epochs'] = getattr(args, 'semantic_probe_epochs', 10)
+        config_dict['semantic_probe_type'] = getattr(args, 'semantic_probe_type', 'multilabel')  # 'linear' or 'multilabel'
 
         # Intrinsic dimensions
         config_dict['track_intrinsic_dimensions'] = getattr(args, 'track_intrinsic_dimension', False)
