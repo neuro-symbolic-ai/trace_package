@@ -35,16 +35,17 @@ class HessianAnalyzer:
         Typically called during training loops to analyze model behavior.
         """
         results = {"step": step}
-
+        print(f"Analyzing Hessian at step {step}...")
         try:
             # Basic Hessian eigenvalue analysis
+            print("Computing Hessian eigenvalues and eigenvectors...")
             eigenvalues, eigenvectors = get_hessian_eigenvectors(
                 model, loss_fn, train_batch,
                 device=self.config.device,
                 num_batches=self.config.num_batches,
                 n_top_vectors=self.config.n_components
             )
-
+            print(f"Eigenvalues shape: {eigenvalues.shape}, Eigenvectors shape: {eigenvectors.shape}")
             # Compute detailed metrics
             hessian_metrics = HessianMetrics.compute_detailed_hessian_metrics(eigenvalues)
             results["hessian"] = hessian_metrics

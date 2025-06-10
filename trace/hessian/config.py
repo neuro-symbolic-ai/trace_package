@@ -33,6 +33,8 @@ class HessianConfig:
     create_plots: bool = True
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
+    loss_fn: Optional[torch.nn.Module()] = torch.nn.CrossEntropyLoss()  # Loss function for Hessian computation
+
     def __post_init__(self):
         """Validate configuration parameters."""
         if self.n_components <= 0:
