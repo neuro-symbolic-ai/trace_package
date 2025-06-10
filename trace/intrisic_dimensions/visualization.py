@@ -583,12 +583,60 @@ class IntrinsicDimensionsVisualizer:
 
         plt.tight_layout()
         print('Plotting intrinsic dimensions by layer...')
-        print('Savve pltot:', save_plot)
+        print('Save plot:', save_plot)
         print('Model name:', model_name)
         print('Log directory:', self.log_dir)
         if save_plot and self.log_dir:
             plt.savefig(
                 os.path.join(self.plots_dir, f'{model_name}_id_by_layer.png'),
+                dpi=300, bbox_inches='tight'
+            )
+        plt.show()
+        plt.close()
+
+    def plot_final_id(self,
+            intrinsic_dimensions: Dict[Union[Tuple[int, str], str, int], float],
+            model_name: str = '',
+            save_plot: bool = True,
+            averaged: bool = True
+    ) -> None:
+        """
+        Plot final intrinsic dimensions for each layer.
+
+        Args:
+            intrinsic_dimensions: Dictionary mapping layer keys to ID values
+            model_name: Name of the model for plot titles
+            save_plot: Whether to save the plot
+        """
+        if not intrinsic_dimensions:
+            print("No intrinsic dimensions data available for final ID plot")
+            return
+        # print('Plotting final intrinsic dimensions...', intrinsic_dimensions)
+        steps = list(intrinsic_dimensions.keys())
+        IDs = []
+        for step, layers in intrinsic_dimensions.items():
+            print(f"Step {step}: \n{layers} -")
+            # print(f'Number of entries: {len(layers)}')
+            avg = 0
+            for _, ID in layers.items():
+                avg += ID
+            avg /= len(layers)
+            IDs.append(avg)
+
+        # ids = list(intrinsic_dimensions.values())
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(steps, IDs, marker='o', linestyle='-', linewidth=2, markersize=8, color='skyblue', alpha=0.8)
+
+        plt.xlabel('Step', fontsize=12)
+        plt.ylabel('Intrinsic Dimension', fontsize=12)
+        plt.title(f'Final Intrinsic Dimensions ({model_name})', fontsize=14)
+        plt.xticks(rotation=45, ha='right')
+        plt.grid(axis='y', alpha=0.3)
+
+        if save_plot and self.log_dir:
+            plt.savefig(
+                os.path.join(self.plots_dir, f'{model_name}_final_id.png'),
                 dpi=300, bbox_inches='tight'
             )
         plt.show()
