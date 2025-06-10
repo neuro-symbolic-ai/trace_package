@@ -10,7 +10,7 @@ from typing import Optional, Dict, Any, Tuple
 from .config import TrainingConfig
 from .utils import (
     prepare_batch_for_model, compute_loss, setup_hidden_state_hooks,
-    get_device_from_string, set_seed, save_checkpoint, validate_model
+    set_seed, save_checkpoint, validate_model
 )
 from .callbacks import TrainingCallbacks
 
@@ -39,7 +39,7 @@ class Trainer:
 
         # Set up device and reproducibility
         set_seed(config.seed)
-        self.device = get_device_from_string(config.device)
+        self.device = config.device
 
         # Create necessary directories
         config.create_directories()
@@ -179,6 +179,11 @@ class Trainer:
 
         print(f"Training completed. Best validation loss: {self.best_val_loss:.4f}")
         print(f"All visualizations saved to {self.config.plots_path}")
+        # saving the analysis results
+
+        analysis_results_path = os.path.join(self.config.plots_path)
+        print(f"Saving analysis results to {analysis_results_path}")
+        self.callbacks.save_analysis_results(analysis_results, analysis_results_path)
 
         return self.best_val_loss, analysis_results
 
