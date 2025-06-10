@@ -61,6 +61,7 @@ class TrainingConfig:
     track_sharpness: bool = True
     track_train_val_landscape_divergence: bool = True
     save_hessian_data: bool = True
+    hessian_loss_fn:  Optional[torch.nn.Module()] = torch.nn.CrossEntropyLoss()  # Loss function for Hessian computation
 
     # Visualization options
     create_training_plots: bool = True
