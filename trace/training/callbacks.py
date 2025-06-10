@@ -1,3 +1,6 @@
+import os
+
+import numpy as np
 import torch
 import copy
 from typing import Dict, Any, Optional, List
@@ -14,10 +17,6 @@ from ..intrisic_dimensions import IntrinsicDimensionAnalyzer, IntrinsicDimension
 class TrainingCallbacks:
     """
     Handles all analysis callbacks during training.
-
-    This class manages the execution of various analysis modules
-    at specified intervals during training, preserving the original
-    training logic while using the refactored modules.
     """
 
     def __init__(self, config, tokenizer, device):
@@ -39,11 +38,84 @@ class TrainingCallbacks:
         # Initialize tracking data
         self._setup_tracking_data()
 
+    @staticmethod
+    def save_analysis_results(analysis_results, analysis_results_path):
+        """
+        Save analysis results to a specified path.
+
+        Args:
+            analysis_results: Dictionary containing analysis results
+            analysis_results_path: Path to save the results
+        """
+        import json
+        # with open(analysis_results_path, 'w') as f:
+        #     json.dump(analysis_results, f, indent=4)
+        print(f"Analysis results saved to {analysis_results_path}")
+
+        def save_json_data(data, filename, save_dir="./logs"):
+            if not data:
+                return
+
+            os.makedirs(save_dir, exist_ok=True)
+            save_path = os.path.join(save_dir, filename)
+
+            try:
+                def make_serializable(obj):
+                    if isinstance(obj, (np.generic, np.ndarray)):
+                        return obj.tolist()
+                    elif isinstance(obj, torch.Tensor):
+                        return obj.detach().cpu().tolist()
+                    elif isinstance(obj, tuple):
+                        return str(obj)
+                    elif isinstance(obj, dict):
+                        return {str(k): make_serializable(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [make_serializable(x) for x in obj]
+                    elif isinstance(obj, (int, float, str, bool)) or obj is None:
+                        return obj
+                    else:
+                        return str(obj)  # Fallback: stringify unknown types
+
+                # Top-level step keys must be str
+                serializable_history = {str(step): make_serializable(metrics) for step, metrics in data.items()}
+
+                with open(save_path, 'w') as f:
+                    json.dump(serializable_history, f, indent=2)
+
+                print(f"Data successfully saved to {save_path}")
+
+            except Exception as e:
+                print(f"Error saving data to {filename}: {e}")
+
+        if analysis_results.get('results').get('intrinsic_dimensions'):
+            intrinsic_dim_log_dir = os.path.join(analysis_results_path, 'intrinsic_dimensions')
+            os.makedirs(intrinsic_dim_log_dir, exist_ok=True)
+            save_json_data(analysis_results.get('results').get('intrinsic_dimensions'), 'intrinsic_dimension_history.json', intrinsic_dim_log_dir)
+
+
+        if analysis_results.get('linguistic_probes'):
+            print("Linguistic probes results:", analysis_results['linguistic_probes'])
+        if analysis_results.get('semantic_probes'):
+            print("Semantic probes results:", analysis_results['semantic_probes'])
+
+        if analysis_results.get('hessian'):
+            print("Hessian analysis results:", analysis_results['hessian'])
+        if analysis_results.get('pos_performance'):
+            print("POS performance results:", analysis_results['pos_performance'])
+        if analysis_results.get('semantic_roles'):
+            print("Semantic roles results:", analysis_results['semantic_roles'])
+        if analysis_results.get('gradients'):
+            print("Gradient analysis results:", analysis_results['gradients'])
+        print("Analysis results summary:")
+        print(f"Total steps analyzed: {len(analysis_results.get('steps_analyzed', []))}")
+        print(f"Analysis modules enabled: {analysis_results.get('analysis_modules', {})}")
+
     def _setup_analysis_modules(self):
         """Initialize the analysis modules based on configuration."""
 
-        # Linguistic Probes Analyzer
+        # Linguistic (POS) Probes Analyzer
         if self.config.track_linguistic_probes:
+            print("Setting up linguistic probes analyzer...")
             probe_config = LinguisticProbesConfig(
                 probe_type=self.config.probe_type,
                 layer_indices=self.config.probe_layers,
@@ -55,15 +127,16 @@ class TrainingCallbacks:
                 log_dir=self.config.plots_path,
                 save_visualizations=True
             )
-            self.linguistic_analyzer = POSAnalyzer(probe_config)
+            self.pos_linguistic_analyzer = POSAnalyzer(probe_config)
         else:
-            self.linguistic_analyzer = None
+            self.pos_linguistic_analyzer = None
 
         # Semantic Probes Analyzer (same structure as linguistic)
         if self.config.track_semantic_probes:
+            print("Setting up semantic probes analyzer...")
             semantic_config = LinguisticProbesConfig(
-                probe_type=self.config.model_type,
-                layer_indices=self.config.probe_layers,
+                probe_type=self.config.semantic_probe_type,
+                layer_indices=self.config.semantic_probe_layers,
                 probe_load_path=self.config.semantic_probe_load_path,
                 num_classes=self.config.semantic_probe_num_features,
                 hidden_dim=self.config.semantic_probe_hidden_dim,
@@ -78,9 +151,10 @@ class TrainingCallbacks:
 
         # Intrinsic Dimensions Analyzer
         if self.config.track_intrinsic_dimensions:
+            print("Setting up intrinsic dimensions analyzer...")
             id_config = IntrinsicDimensionsConfig(
                 model_type=self.config.model_type,
-                layers_to_analyze=self.config.probe_layers,  # Use same layers as probes
+                layers_to_analyze=self.config.id_selected_layers,  # Use same layers as probes
                 id_method=self.config.id_method,
                 log_dir=self.config.plots_path
             )
@@ -165,10 +239,11 @@ class TrainingCallbacks:
         batch_loader = [batch]  # Simple wrapper for single batch
 
         # Run linguistic probes analysis
-        if self.linguistic_analyzer:
+        if self.pos_linguistic_analyzer:
             try:
                 print("Running linguistic probes analysis...")
                 # TODO: Implement probe monitoring logic from original code
+                print("Monitoring linguistic probes...TODO")
                 # This should monitor confidence scores over time
                 self._monitor_linguistic_probes(hidden_states, step)
             except Exception as e:
@@ -352,7 +427,7 @@ class TrainingCallbacks:
         print("Generating final visualizations...")
 
         # Generate linguistic probe visualizations
-        if self.linguistic_analyzer and self.analysis_results['linguistic_probes']:
+        if self.pos_linguistic_analyzer and self.analysis_results['linguistic_probes']:
             try:
                 print("Generating linguistic probe visualizations...")
                 # The visualizations should be generated automatically by the analyzer
@@ -373,16 +448,10 @@ class TrainingCallbacks:
             try:
                 print("Generating intrinsic dimensions evolution plots...")
                 # Convert step-wise results to evolution format
-                evolution_data = self._convert_to_evolution_format(
-                    self.analysis_results['intrinsic_dimensions']
-                )
 
-                if evolution_data:
-                    # Use the analyzer's evolution plotting capability
-                    final_ids = {k: v[-1][1] for k, v in evolution_data.items() if v}
-                    self.intrinsic_analyzer.visualizer.plot_id_by_layer(
-                        final_ids, model_name
-                    )
+                self.intrinsic_analyzer.visualizer.plot_final_id(
+                        self.analysis_results['intrinsic_dimensions'], model_name
+                )
 
             except Exception as e:
                 print(f"Failed to generate intrinsic dimensions visualizations: {e}")
@@ -436,7 +505,7 @@ class TrainingCallbacks:
             'steps_analyzed': self.tracked_steps,
             'num_steps': len(self.tracked_steps),
             'analysis_modules': {
-                'linguistic_probes': self.linguistic_analyzer is not None,
+                'linguistic_probes': self.pos_linguistic_analyzer is not None,
                 'semantic_probes': self.semantic_analyzer is not None,
                 'intrinsic_dimensions': self.intrinsic_analyzer is not None,
                 'hessian': self.hessian_analyzer is not None,

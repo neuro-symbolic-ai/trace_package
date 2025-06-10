@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 import os
+
+import torch
 
 
 @dataclass
@@ -68,7 +70,7 @@ class TrainingConfig:
 
     # Linguistic probes tracking
     track_linguistic_probes: bool = True
-    probe_layers: Optional[List[int]] = None
+    probe_layers: Optional[Union[List[int], Dict[str, List[int]]]] = None
     probe_load_path: Optional[str] = None
     probe_num_features: int = 8
     probe_hidden_dim: int = 128
@@ -78,7 +80,8 @@ class TrainingConfig:
 
 
     # Semantic probes tracking
-    track_semantic_probes: bool = False
+    track_semantic_probes: bool = True
+    semantic_probe_layers: Optional[Union[List[int], Dict[str, List[int]]]] = None
     semantic_probe_load_path: Optional[str] = None
     semantic_probe_num_features: int = 8
     semantic_probe_hidden_dim: int = 128
@@ -89,6 +92,7 @@ class TrainingConfig:
     # Intrinsic dimensions tracking
     track_intrinsic_dimensions: bool = True
     id_method: str = "TwoNN"
+    id_selected_layers: Optional[Union[List[int], Dict[str, List[int]]]] = None
 
     # POS tracking (placeholder for now)
     track_pos_performance: bool = True
@@ -99,7 +103,7 @@ class TrainingConfig:
     semantic_granularity: str = 'basic'
 
     # Device and reproducibility
-    device: str = "auto"
+    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     seed: int = 42
 
     def __post_init__(self):
