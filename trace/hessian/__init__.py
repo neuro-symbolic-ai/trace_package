@@ -1,5 +1,5 @@
-from .analysis import HessianAnalyzer
 from .config import HessianConfig
+from .analysis import HessianAnalyzer
 from .components import ComponentAnalyzer, ComponentSelector
 from .metrics import HessianMetrics
 from .visualization import HessianVisualizer
@@ -9,11 +9,11 @@ from .utils import (
     get_hessian_eigenvectors
 )
 
-from .visualization import (
-    plot_hessian_evolution,
-    plot_component_comparison,
-    plot_train_val_landscape_divergence_metrics
-)
+# from .visualization import (
+#     plot_hessian_evolution,
+#     plot_component_comparison,
+#     plot_train_val_landscape_divergence_metrics
+# )
 from .components import (compute_component_hessians)
 
 __all__ = [
@@ -34,7 +34,7 @@ __all__ = [
     'compute_component_hessians',
 
     # Visualization functions
-    'plot_hessian_evolution',
-    'plot_component_comparison',
-    'plot_train_val_landscape_divergence_metrics'
+    # 'plot_hessian_evolution',
+    # 'plot_component_comparison',
+    # 'plot_train_val_landscape_divergence_metrics'
 ]

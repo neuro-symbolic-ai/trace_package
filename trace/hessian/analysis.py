@@ -7,6 +7,7 @@ from .config import HessianConfig
 from .utils import compute_loss, get_hessian_eigenvectors
 from .metrics import HessianMetrics
 from .components import ComponentAnalyzer
+from .visualization import HessianVisualizer
 
 
 class HessianAnalyzer:
@@ -20,6 +21,9 @@ class HessianAnalyzer:
     def __init__(self, config: Optional[HessianConfig] = None):
         self.config = config or HessianConfig.default()
         self.component_analyzer = ComponentAnalyzer(config)
+        self.visualizer = HessianVisualizer(
+            self.config
+        ) if getattr(self.config, 'save_visualizations', True) else None
 
     def analyze_step(
             self,

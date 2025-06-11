@@ -27,6 +27,7 @@ class HessianConfig:
     # Computation settings
     tol: float = 0.001 # tol for eigenvalue convergence
     max_iterations: int = 1000
+    log_dir: Optional[str] = './analysis_results'  # Directory for logging results
 
     # Output settings
     save_hessian_data: bool = True

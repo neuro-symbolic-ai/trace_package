@@ -3,16 +3,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Dict, Any, Optional, List
 
+from trace.hessian import HessianConfig
+
 
 class HessianVisualizer:
     """
     Class for creating visualizations of Hessian analysis results.
     """
+    def __init__(self, config: Optional[HessianConfig] = None):
+        """
+        Initialize the visualizer.
 
-    @staticmethod
+        Args:
+            log_dir: Directory to save visualizations
+            config: Configuration object
+        """
+
+        self.config = config or HessianConfig.default()
+        self.log_dir = config.log_dir if config and config.log_dir else './analysis_results'
+
+        # Set up matplotlib style
+        plt.style.use('seaborn-v0_8-whitegrid')
+
+        # Create output directories
+        self.plots_dir = os.path.join(self.log_dir, 'hessian')
+        os.makedirs(self.plots_dir, exist_ok=True)
+
+
     def plot_eigenvalue_evolution(
+            self,
             hessian_history: Dict[int, Dict[str, Any]],
-            save_path: Optional[str] = None,
             model_name: str = ""
     ) -> None:
         """
@@ -33,17 +53,17 @@ class HessianVisualizer:
             print("No Hessian history to plot")
             return
 
-        if save_path:
-            os.makedirs(save_path, exist_ok=True)
 
         # Extract and sort steps
         steps = sorted([int(step) for step in hessian_history.keys()])
-
+        # print(f"Plotting eigenvalue evolution for {model_name} at steps: {steps}")
+        # print(f'Hessian history keys: {list(hessian_history.keys())}')
+        # print(f'Hessian history: {hessian_history}')
         # Extract metrics
-        max_eigs = [hessian_history[step]["max_eigenvalue"] for step in steps]
-        min_eigs = [hessian_history[step]["min_eigenvalue"] for step in steps]
-        traces = [hessian_history[step]["hessian_trace_estimate"] for step in steps]
-        negative_counts = [hessian_history[step]["negative_count"] for step in steps]
+        max_eigs = [hessian_history[step]["hessian"]["max_eigenvalue"] for step in steps]
+        min_eigs = [hessian_history[step]["hessian"]["min_eigenvalue"] for step in steps]
+        traces = [hessian_history[step]["hessian"]["hessian_trace_estimate"] for step in steps]
+        negative_counts = [hessian_history[step]["hessian"]["negative_count"] for step in steps]
 
         # Set up plotting style
         plt.style.use('seaborn-v0_8-whitegrid') # tried others and this one was clearest
@@ -60,8 +80,7 @@ class HessianVisualizer:
         plt.grid(True, which="both", ls="-", alpha=0.2)
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_extreme_eigenvalues.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_extreme_eigenvalues.png'), dpi=300)
         plt.close()
 
         # Plot trace evolution
@@ -73,8 +92,7 @@ class HessianVisualizer:
         plt.grid(True, alpha=0.2)
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_hessian_trace.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_hessian_trace.png'), dpi=300)
         plt.close()
 
         # Plot negative eigenvalue count
@@ -86,29 +104,28 @@ class HessianVisualizer:
         plt.grid(True, alpha=0.2)
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_negative_eigenvalues.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_negative_eigenvalues.png'), dpi=300)
         plt.close()
 
         # Create eigenvalue heatmap
-        HessianVisualizer._plot_eigenvalue_heatmap(hessian_history, steps, save_path, model_name)
+        # HessianVisualizer._plot_eigenvalue_heatmap(hessian_history, steps, save_path, model_name)
 
-    @staticmethod
-    def _plot_eigenvalue_heatmap(
+
+    def plot_eigenvalue_heatmap(
+            self,
             hessian_history: Dict[int, Dict[str, Any]],
-            steps: List[int],
-            save_path: Optional[str],
-            model_name: str
+            model_name: str = ""
     ) -> None:
         """Create heatmap of top eigenvalues throughout training."""
         # Sample steps to avoid overcrowding
+        steps = sorted([int(step) for step in hessian_history.keys()])
         steps_to_plot = sorted(steps)[::max(1, len(steps) // 20)]
-        top_n = min(8, len(hessian_history[steps[0]]["top_eigenvalues"]))
+        top_n = min(8, len(hessian_history[steps[0]]["hessian"]["top_eigenvalues"]))
 
         eigenvalue_matrix = np.zeros((len(steps_to_plot), top_n))
 
         for i, step in enumerate(steps_to_plot):
-            eigenvalue_matrix[i, :] = hessian_history[step]["top_eigenvalues"][:top_n]
+            eigenvalue_matrix[i, :] = hessian_history[step]["hessian"]["top_eigenvalues"][:top_n]
 
         plt.figure(figsize=(12, 8))
         im = plt.imshow(eigenvalue_matrix.T, aspect='auto', cmap='viridis')
@@ -120,35 +137,34 @@ class HessianVisualizer:
         plt.yticks(range(top_n), range(1, top_n + 1))
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_eigenvalue_heatmap.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_eigenvalue_heatmap.png'), dpi=300)
         plt.close()
 
-    @staticmethod
+
     def plot_gradient_alignment(
-            alignment_history: Dict[int, Dict[str, Any]],
-            save_path: Optional[str] = None,
+            self,
+            hessian_history: Dict[int, Dict[str, Any]],
             model_name: str = ""
     ) -> None:
         """
         Plot gradient-Hessian alignment metrics.
 
         Args:
-            alignment_history: Dictionary of alignment metrics at each step
+            hessian_history: Dictionary of alignment metrics at each step
             save_path: Path to save plots
             model_name: Model name for plot titles and filenames
         """
-        if not alignment_history:
+        if not hessian_history:
             print("No alignment history to plot")
             return
 
-        steps = sorted([int(step) for step in alignment_history.keys()])
+        steps = sorted([int(step) for step in hessian_history.keys()])
         plt.style.use('seaborn-v0_8-whitegrid')
         fig_size = (12, 8)
 
         # Plot gradient-Hessian alignment
-        if all("grad_Hg_alignment" in alignment_history[step] for step in steps):
-            alignments = [alignment_history[step]["grad_Hg_alignment"] for step in steps]
+        if all("grad_Hg_alignment" in hessian_history[step]['alignment'] for step in steps):
+            alignments = [hessian_history[step]['alignment']["grad_Hg_alignment"] for step in steps]
 
             plt.figure(figsize=fig_size)
             plt.plot(steps, alignments, 'b-', linewidth=2)
@@ -159,30 +175,28 @@ class HessianVisualizer:
             plt.ylim(0, 1.05)
             plt.tight_layout()
 
-            if save_path:
-                plt.savefig(os.path.join(save_path, f'{model_name}_grad_hessian_alignment.png'), dpi=300)
+            plt.savefig(os.path.join(self.plots_dir, f'{model_name}_grad_hessian_alignment.png'), dpi=300)
             plt.close()
 
         # Plot gradient and Hg norms
-        HessianVisualizer._plot_gradient_norms(alignment_history, steps, save_path, model_name)
+        HessianVisualizer._plot_gradient_norms(self, hessian_history, steps, model_name)
 
         # Plot curvature-to-gradient ratio
-        HessianVisualizer._plot_curvature_gradient_ratio(alignment_history, steps, save_path, model_name)
+        HessianVisualizer._plot_curvature_gradient_ratio(self, hessian_history, steps, model_name)
 
-    @staticmethod
     def _plot_gradient_norms(
+            self,
             alignment_history: Dict[int, Dict[str, Any]],
             steps: List[int],
-            save_path: Optional[str],
             model_name: str
     ) -> None:
         """Plot gradient norm and Hessian-gradient norm comparison."""
-        if not all("grad_norm" in alignment_history[step] and "Hg_norm" in alignment_history[step]
+        if not all("grad_norm" in alignment_history[step]['alignment'] and "Hg_norm" in alignment_history[step]['alignment']
                    for step in steps):
             return
 
-        grad_norms = [alignment_history[step]["grad_norm"] for step in steps]
-        Hg_norms = [alignment_history[step]["Hg_norm"] for step in steps]
+        grad_norms = [alignment_history[step]['alignment']["grad_norm"] for step in steps]
+        Hg_norms = [alignment_history[step]['alignment']["Hg_norm"] for step in steps]
 
         fig, ax1 = plt.subplots(figsize=(12, 8))
 
@@ -205,22 +219,21 @@ class HessianVisualizer:
         plt.title(f'Gradient and Hessian-Gradient Norm Comparison - {model_name}', fontsize=14)
         fig.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_grad_hg_norms.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_grad_hg_norms.png'), dpi=300)
         plt.close()
 
-    @staticmethod
+
     def _plot_curvature_gradient_ratio(
+            self,
             alignment_history: Dict[int, Dict[str, Any]],
             steps: List[int],
-            save_path: Optional[str],
             model_name: str
     ) -> None:
         """Plot curvature-to-gradient ratio."""
-        if not all("grad_Hg_ratio" in alignment_history[step] for step in steps):
+        if not all("grad_Hg_ratio" in alignment_history[step]['alignment'] for step in steps):
             return
 
-        ratios = [alignment_history[step]["grad_Hg_ratio"] for step in steps]
+        ratios = [alignment_history[step]['alignment']["grad_Hg_ratio"] for step in steps]
 
         plt.figure(figsize=(12, 8))
         plt.semilogy(steps, ratios, 'g-', linewidth=2)
@@ -230,14 +243,13 @@ class HessianVisualizer:
         plt.grid(True, which="both", ls="-", alpha=0.2)
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_curvature_gradient_ratio.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_curvature_gradient_ratio.png'), dpi=300)
         plt.close()
 
-    @staticmethod
+
     def plot_component_comparison(
-            component_history: Dict[str, Dict[int, Dict[str, Any]]],
-            save_path: Optional[str] = None,
+            self,
+            hessian_history: Dict[int, Dict[str, Any]],
             model_name: str = ""
     ) -> None:
         """
@@ -248,19 +260,21 @@ class HessianVisualizer:
             save_path: Path to save plots
             model_name: Model name for plot titles and filenames
         """
-        if not component_history:
-            print("No component history to plot")
-            return
+        # if not component_history:
+        #     print("No component history to plot")
+        #     return
+        # We will work with hessian history of components, which is a dictionar
+        # its keys are the steps
+        # each step contains a dictionary with component names as keys and its values are dictionaries with metrics for each component
+        steps = sorted(list(hessian_history.keys()))
+        components = hessian_history[steps[0]]['components'].keys()
 
-        if save_path:
-            os.makedirs(save_path, exist_ok=True)
+        # components = list(component_history.keys())
+        # common_steps = HessianVisualizer._find_common_steps(component_history)
 
-        components = list(component_history.keys())
-        common_steps = HessianVisualizer._find_common_steps(component_history)
-
-        if not common_steps:
-            print("No common steps found across components")
-            return
+        # if not common_steps:
+        #     print("No common steps found across components")
+        #     return
 
         colors = plt.cm.tab10(np.linspace(0, 1, len(components)))
         plt.style.use('seaborn-v0_8-whitegrid')
@@ -276,50 +290,42 @@ class HessianVisualizer:
 
         for metric, (ylabel, use_log) in metrics_to_plot.items():
             HessianVisualizer._plot_metric_comparison(
-                component_history, common_steps, components, colors,
-                metric, ylabel, use_log, save_path, model_name
+                self,
+                hessian_history=hessian_history,
+                common_steps=steps,
+                components=components, colors=colors,
+                metric=metric, ylabel=ylabel, use_log=use_log, model_name=model_name
             )
 
-    @staticmethod
-    def _find_common_steps(component_history: Dict[str, Dict[int, Dict[str, Any]]]) -> List[int]: # todo: this is not working
-        """Find common steps across all components."""
-        common_steps = set()
-        print('component_history:', component_history)
-        for component, history in component_history.items():
-            if not common_steps:
-                common_steps = set(int(step) for step in history.keys())
-            else:
-                common_steps &= set(int(step) for step in history.keys())
-        return sorted(common_steps)
 
-    @staticmethod
+
+    # @staticmethod
     def _plot_metric_comparison(
-            component_history: Dict[str, Dict[int, Dict[str, Any]]],
+            self,
+            hessian_history: Dict[int, Dict[str, Any]],
             common_steps: List[int],
             components: List[str],
             colors: np.ndarray,
             metric: str,
             ylabel: str,
             use_log: bool,
-            save_path: Optional[str],
+            # save_path: Optional[str],
             model_name: str
     ) -> None:
         """Plot a specific metric comparison across components."""
-        # Check if metric exists in all components
-        if not all(all(metric in component_history[comp][step]
-                       for step in common_steps if step in component_history[comp])
-                   for comp in components):
-            return
+
 
         plt.figure(figsize=(14, 10))
 
         for i, component in enumerate(components):
             values = []
             for step in common_steps:
-                if step in component_history[component]:
-                    val = component_history[component][step].get(metric, np.nan)
-                    if use_log and not np.isnan(val):
-                        val = abs(val) if val != 0 else 1e-10
+                val = hessian_history[step]['components'].get(component, {}).get(metric, np.nan)
+                if use_log and not np.isnan(val): #if step in hessian_history[component]:
+                    val = abs(val) if val != 0 else 1e-10
+                    # val = hessian_history[component][step].get(metric, np.nan)
+                    # if use_log and not np.isnan(val):
+                    #     val = abs(val) if val != 0 else 1e-10
                     values.append(val)
                 else:
                     values.append(np.nan)
@@ -336,14 +342,18 @@ class HessianVisualizer:
         plt.grid(True, alpha=0.2)
         plt.tight_layout()
 
-        if save_path:
-            filename = f'{model_name}_component_{metric}.png'
-            plt.savefig(os.path.join(save_path, filename), dpi=300)
+        # if save_path:
+        #     filename = f'{model_name}_component_{metric}.png'
+        #     plt.savefig(os.path.join(save_path, filename), dpi=300)
+
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_component_{metric}.png'), dpi=300)
         plt.close()
 
-    @staticmethod
+
+
     def plot_memorization_metrics(
-            memorization_history: Dict[int, Dict[str, Any]],
+            self,
+            hessian_history: Dict[int, Dict[str, Any]],
             save_path: Optional[str] = None,
             model_name: str = ""
     ) -> None:
@@ -351,24 +361,24 @@ class HessianVisualizer:
         Plot metrics related to memorization detection.
 
         Args:
-            memorization_history: Dictionary of memorization metrics
+            hessian_history: Dictionary of memorization metrics
             save_path: Path to save plots
             model_name: Model name for plot titles and filenames
         """
-        if not memorization_history:
+        if not hessian_history:
             print("No memorization history to plot")
             return
 
         if save_path:
             os.makedirs(save_path, exist_ok=True)
 
-        steps = sorted([int(step) for step in memorization_history.keys()])
+        steps = sorted([int(step) for step in hessian_history.keys()])
         plt.style.use('seaborn-v0_8-whitegrid')
         fig_size = (12, 8)
 
         # Plot memorization score - changed this from original code (memorization_score for simplicity - check hessian_ana;ysis.py for original)
-        if all("train_val_landscape_divergence_score" in memorization_history[step] for step in steps):
-            scores = [memorization_history[step]["train_val_landscape_divergence_score"] for step in steps]
+        if all("train_val_landscape_divergence_score" in hessian_history[step]['train_val_divergence'] for step in steps):
+            scores = [hessian_history[step]['train_val_divergence']["train_val_landscape_divergence_score"] for step in steps]
 
             plt.figure(figsize=fig_size)
             plt.plot(steps, scores, 'r-', linewidth=2)
@@ -378,13 +388,12 @@ class HessianVisualizer:
             plt.grid(True, alpha=0.2)
             plt.tight_layout()
 
-            if save_path:
-                plt.savefig(os.path.join(save_path, f'{model_name}_memorization_score.png'), dpi=300)
+            plt.savefig(os.path.join(self.plots_dir, f'{model_name}_memorization_score.png'), dpi=300)
             plt.close()
 
         # Plot trace ratio
-        if all("trace_ratio" in memorization_history[step] for step in steps):
-            trace_ratios = [memorization_history[step]["trace_ratio"] for step in steps]
+        if all("trace_ratio" in hessian_history[step]['train_val_divergence'] for step in steps):
+            trace_ratios = [hessian_history[step]['train_val_divergence']["trace_ratio"] for step in steps]
 
             plt.figure(figsize=fig_size)
             plt.plot(steps, trace_ratios, 'b-', linewidth=2)
@@ -394,13 +403,12 @@ class HessianVisualizer:
             plt.grid(True, alpha=0.2)
             plt.tight_layout()
 
-            if save_path:
-                plt.savefig(os.path.join(save_path, f'{model_name}_trace_ratio.png'), dpi=300)
+            plt.savefig(os.path.join(self.plots_dir, f'{model_name}_trace_ratio.png'), dpi=300)
             plt.close()
 
         # Plot eigenvalue distribution overlap
-        if all("eigenvalue_distribution_overlap" in memorization_history[step] for step in steps):
-            overlaps = [memorization_history[step]["eigenvalue_distribution_overlap"] for step in steps]
+        if all("eigenvalue_distribution_overlap" in hessian_history[step]['train_val_divergence'] for step in steps):
+            overlaps = [hessian_history[step]['train_val_divergence']["eigenvalue_distribution_overlap"] for step in steps]
 
             plt.figure(figsize=fig_size)
             plt.plot(steps, overlaps, 'g-', linewidth=2)
@@ -411,18 +419,16 @@ class HessianVisualizer:
             plt.ylim(0, 1.05) # Overlap is between 0 and 1
             plt.tight_layout()
 
-            if save_path:
-                plt.savefig(os.path.join(save_path, f'{model_name}_eigenvalue_overlap.png'), dpi=300)
+            plt.savefig(os.path.join(self.plots_dir, f'{model_name}_eigenvalue_overlap.png'), dpi=300)
             plt.close()
 
         # Plot comprehensive comparison
-        HessianVisualizer._plot_memorization_comparison(memorization_history, steps, save_path, model_name)
+        HessianVisualizer._plot_memorization_comparison(self, hessian_history, steps, model_name)
 
-    @staticmethod
     def _plot_memorization_comparison(
+            self,
             memorization_history: Dict[int, Dict[str, Any]],
             steps: List[int],
-            save_path: Optional[str],
             model_name: str
     ) -> None:
         """Plot multiple memorization metrics in one figure for comparison."""
@@ -436,7 +442,7 @@ class HessianVisualizer:
 
         available_metrics = {
             metric: label for metric, label in metrics_to_plot.items()
-            if all(metric in memorization_history[step] for step in steps)
+            if all(metric in memorization_history[step]['train_val_divergence'] for step in steps)
         }
 
         if not available_metrics:
@@ -445,7 +451,7 @@ class HessianVisualizer:
         plt.figure(figsize=(12, 8))
 
         for metric, label in available_metrics.items():
-            values = [memorization_history[step][metric] for step in steps]
+            values = [memorization_history[step]['train_val_divergence'][metric] for step in steps]
 
             # Normalize to 0-1 range for comparison if not already in that range
             if metric != "eigenvalue_distribution_overlap":
@@ -463,8 +469,7 @@ class HessianVisualizer:
         plt.grid(True, alpha=0.2)
         plt.tight_layout()
 
-        if save_path:
-            plt.savefig(os.path.join(save_path, f'{model_name}_memorization_metrics.png'), dpi=300)
+        plt.savefig(os.path.join(self.plots_dir, f'{model_name}_memorization_metrics.png'), dpi=300)
         plt.close()
 
     @staticmethod
@@ -561,10 +566,10 @@ class HessianVisualizer:
                     plt.savefig(os.path.join(save_path, f'{model_name}_condition_number.png'), dpi=300)
                 plt.close()
 
-    @staticmethod
     def create_comprehensive_report(
+            self,
             hessian_history: Dict[int, Dict[str, Any]],
-            component_history: Optional[Dict[str, Dict[int, Dict[str, Any]]]] = None,
+            component_history: Optional[Dict[int, Dict[str, Any]]] = None,
             alignment_history: Optional[Dict[int, Dict[str, Any]]] = None,
             memorization_history: Optional[Dict[int, Dict[str, Any]]] = None,
             save_path: Optional[str] = None,
@@ -581,35 +586,33 @@ class HessianVisualizer:
             save_path: Path to save plots
             model_name: Model name for plot titles and filenames
         """
-        if save_path:
-            os.makedirs(save_path, exist_ok=True)
 
         print(f"Creating comprehensive Hessian analysis report for {model_name}")
 
         # Plot basic Hessian evolution
         if hessian_history:
             print("Plotting eigenvalue evolution...")
-            HessianVisualizer.plot_eigenvalue_evolution(hessian_history, save_path, model_name)
+            HessianVisualizer.plot_eigenvalue_evolution(self,hessian_history, model_name)
 
             print("Plotting complexity metrics...")
-            HessianVisualizer.plot_complexity_metrics(hessian_history, save_path, model_name)
+            HessianVisualizer.plot_complexity_metrics(hessian_history, self.plots_dir, model_name)
 
         # Plot gradient alignment metrics
         if alignment_history:
             print("Plotting gradient alignment metrics...")
-            HessianVisualizer.plot_gradient_alignment(alignment_history, save_path, model_name)
+            HessianVisualizer.plot_gradient_alignment(self, alignment_history, model_name)
 
         # Plot component comparisons
         if component_history:
             print("Plotting component comparisons...")
-            HessianVisualizer.plot_component_comparison(component_history, save_path, model_name)
+            HessianVisualizer.plot_component_comparison(self, component_history, model_name)
 
         # Plot memorization metrics
         if memorization_history:
             print("Plotting memorization metrics...")
-            HessianVisualizer.plot_memorization_metrics(memorization_history, save_path, model_name)
+            HessianVisualizer.plot_memorization_metrics(self, memorization_history, model_name)
 
-        print(f"Comprehensive Hessian analysis report saved to {save_path}")
+        print(f"Comprehensive Hessian analysis report saved to {self.plots_dir}")
 
     @staticmethod
     def save_analysis_summary(
@@ -671,19 +674,19 @@ class HessianVisualizer:
 
 
 # Legacy compatibility functions for pre_training.py
-def plot_hessian_evolution(hessian_history, alignment_history=None, plots_path=None, model_name=''):
-    """Legacy wrapper for hessian evolution plotting."""
-    HessianVisualizer.plot_eigenvalue_evolution(hessian_history, plots_path, model_name)
-
-    if alignment_history:
-        HessianVisualizer.plot_gradient_alignment(alignment_history, plots_path, model_name)
-
-
-def plot_component_comparison(component_history, plots_path=None, model_name=""):
-    """Legacy wrapper for component comparison plotting."""
-    HessianVisualizer.plot_component_comparison(component_history, plots_path, model_name)
-
-
-def plot_train_val_landscape_divergence_metrics(memorization_history, plots_path=None, model_name=""):
-    """Legacy wrapper for memorization metrics plotting."""
-    HessianVisualizer.plot_memorization_metrics(memorization_history, plots_path, model_name)
+# def plot_hessian_evolution(hessian_history, alignment_history=None, plots_path=None, model_name=''):
+#     """Legacy wrapper for hessian evolution plotting."""
+#     HessianVisualizer.plot_eigenvalue_evolution(hessian_history, plots_path, model_name)
+#
+#     if alignment_history:
+#         HessianVisualizer.plot_gradient_alignment(alignment_history, plots_path, model_name)
+#
+#
+# def plot_component_comparison(component_history, plots_path=None, model_name=""):
+#     """Legacy wrapper for component comparison plotting."""
+#     HessianVisualizer.plot_component_comparison(component_history, plots_path, model_name)
+#
+#
+# def plot_train_val_landscape_divergence_metrics(memorization_history, plots_path=None, model_name=""):
+#     """Legacy wrapper for memorization metrics plotting."""
+#     HessianVisualizer.plot_memorization_metrics(memorization_history, plots_path, model_name)
