@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Union
 
 
 @dataclass
@@ -9,7 +9,7 @@ class LinguisticProbesConfig:
     """
 
     # Probe architecture
-    probe_type: str = "linear"
+    probe_type: str = "multilabel"  # 'linear' or 'multilabel'
     num_classes: int = 8  # Number of classes for classification probes
     hidden_dim: int = 128  # Hidden dimension for MLP probes
     lr: float = 0.001  # Learning rate for training probes
@@ -27,7 +27,7 @@ class LinguisticProbesConfig:
     track_performance_over_time: bool = True
 
     # Special options - which layers to probe
-    layer_indices: Optional[List[int]] = None
+    layer_indices: Optional[Union[List[int], Dict[str, List[int]]]] = None
     probe_all_layers: bool = False
 
     # Data processing settings
@@ -45,10 +45,11 @@ class LinguisticProbesConfig:
     save_visualizations: bool = True
     save_path: Optional[str] = None
     log_dir: Optional[str] = None
+    probe_load_path: Optional[str] = None  # Path to load existing probes if needed
 
     def __post_init__(self):
         """Validate configuration parameters."""
-        if self.probe_type not in ['linear', 'mlp']:
+        if self.probe_type not in ['linear', 'multilabel']:
             raise ValueError(f"Unknown probe_type: {self.probe_type}")
 
         if self.num_classes <= 0:
@@ -71,7 +72,7 @@ class LinguisticProbesConfig:
     def default(cls) -> 'LinguisticProbesConfig':
         """Create a default configuration for linguistic probes."""
         return cls(
-            probe_type="linear",
+            probe_type="multilabel",
             # num_classes=2,
             hidden_dim=128,
             lr=0.001,

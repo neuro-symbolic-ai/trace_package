@@ -3,7 +3,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from typing import Optional, List, Dict, Any
-import numpy as np
+
+
+from trace.linguistic_probes import LinguisticProbesConfig
 
 
 class LinearProbe(nn.Module):
@@ -15,14 +17,15 @@ class LinearProbe(nn.Module):
     def __init__(
             self,
             input_dim: int,
-            num_classes: int,
-            device: str = "cpu"
+            # num_classes: int,
+            config: Optional[LinguisticProbesConfig] = None,
+            # device: str = "cpu"
     ):
         super().__init__()
-        self.device = device
-        self.num_classes = num_classes
+        self.device = config.device if config else "cpu"
+        self.num_classes = config.num_classes if config else 8
 
-        self.classifier = nn.Linear(input_dim, num_classes)
+        self.classifier = nn.Linear(input_dim, self.num_classes)
         self.to(self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -40,41 +43,36 @@ class MultiLabelProbe(nn.Module):
     def __init__(
             self,
             input_dim: int,
-            num_features: int = 12,
-            hidden_dim: int = 128,
-            lr: float = 1e-3,
-            epochs: int = 3,
-            device: str = "cpu",
-            dropout: float = 0.5,
+            config: Optional[LinguisticProbesConfig] = None,
+            # num_features: int = 12,
+            # hidden_dim: int = 128,
+            # lr: float = 1e-3,
+            # epochs: int = 3,
+            # device: str = "cpu",
+            # dropout: float = 0.5,
 
     ):
         """
         Initialize multi-label probe.
-
-        Args:
-            input_dim: Dimension of input features
-            num_features: Number of output features/labels
-            hidden_dim: Hidden layer dimension
-            lr: Learning rate
-            epochs: Training epochs
-            device: Device for computation
-            dropout: Dropout probability
         """
         super().__init__()
-        self.device = device
-        self.epochs = epochs
-        self.lr = lr
-        self.num_features = num_features
+        self.device = config.device if config else 'cpu'
+        self.epochs = config.epochs if config else 3
+        self.lr = config.lr if config else 1e-3
+        self.num_features = config.num_classes if config else 8
         self.class_weights = None
+        self.input_dim = input_dim
+        self.hidden_dim = config.hidden_dim if config else 128
+        self.dropout = config.dropout if config else 0.5
 
         # Build the probe network
         self.probe = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
+            nn.Linear(self.input_dim, self.hidden_dim),
             nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, hidden_dim),
+            nn.Dropout(self.dropout),
+            nn.Linear(self.hidden_dim, self.hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, num_features),
+            nn.Linear(self.hidden_dim, self.num_features),
             nn.Sigmoid()
         )
 
@@ -242,7 +240,8 @@ class MultiLabelProbe(nn.Module):
 
         return results
 
-    def print_evaluation_report(self, results: Dict[str, Any]) -> None:
+    @staticmethod
+    def print_evaluation_report(results: Dict[str, Any]) -> None:
         """Print a formatted evaluation report."""
         print(f"\nProbe Evaluation Report:")
         print(f"Overall accuracy: {results['overall_accuracy']:.4f}\n")
