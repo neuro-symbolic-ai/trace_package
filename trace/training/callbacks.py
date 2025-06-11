@@ -6,12 +6,11 @@ import copy
 from typing import Dict, Any, Optional, List
 from collections import defaultdict
 
+from ..hessian import HessianAnalyzer, HessianConfig
 # Import the refactored modules
 from ..linguistic_probes import LinguisticProbesConfig, POSAnalyzer, SemanticAnalyzer
 from ..intrisic_dimensions import IntrinsicDimensionAnalyzer, IntrinsicDimensionsConfig
 
-
-# from ..hessian_analysis import HessianAnalyzer, HessianConfig  # TODO: Add when refactored
 
 
 class TrainingCallbacks:
@@ -98,8 +97,11 @@ class TrainingCallbacks:
         if analysis_results.get('semantic_probes'):
             print("Semantic probes results:", analysis_results['semantic_probes'])
 
-        if analysis_results.get('hessian'):
-            print("Hessian analysis results:", analysis_results['hessian'])
+        if analysis_results.get('results').get('hessian'):
+            hessian_log_dir = os.path.join(analysis_results_path, 'hessian')
+            os.makedirs(hessian_log_dir, exist_ok=True)
+            save_json_data(analysis_results.get('results').get('hessian'), 'hessian_history.json', hessian_log_dir)
+
         if analysis_results.get('pos_performance'):
             print("POS performance results:", analysis_results['pos_performance'])
         if analysis_results.get('semantic_roles'):
@@ -162,16 +164,24 @@ class TrainingCallbacks:
         else:
             self.intrinsic_analyzer = None
 
-        # TODO: Add other analyzers when refactored
         # Hessian Analyzer
         if self.config.track_hessian:
-            # hessian_config = HessianConfig(...)
-            # self.hessian_analyzer = HessianAnalyzer(hessian_config)
+            hessian_config = HessianConfig(
+                n_components=self.config.hessian_n_components,
+                track_component_hessian=self.config.track_component_hessian,
+                track_gradient_alignment=self.config.track_gradient_alignment,
+                component_list=self.config.component_list,
+                track_sharpness=self.config.track_sharpness,
+                track_train_val_landscape_divergence=self.config.track_train_val_landscape_divergence,
+                save_hessian_data=self.config.save_hessian_data,
+                loss_fn=self.config.hessian_loss_fn,
+                log_dir=self.config.plots_path,
+            )
+            self.hessian_analyzer = HessianAnalyzer(hessian_config)
             print("Hessian analysis will be added when module is refactored")
-            self.hessian_analyzer = None
         else:
             self.hessian_analyzer = None
-
+        # TODO: Add other analyzers when refactored
         # POS Performance Tracker (placeholder)
         if self.config.track_pos_performance:
             print("POS performance tracking will be added later")
@@ -273,9 +283,13 @@ class TrainingCallbacks:
         # Run Hessian analysis (placeholder)
         if self.hessian_analyzer:
             try:
-                print("Running Hessian analysis...")
-                # TODO: Implement when Hessian module is refactored
-                self._run_hessian_analysis(model, batch, step, val_loader)
+                # Use the HessianAnalyzer to perform analysis
+                hessian_results = self.hessian_analyzer.analyze_step(
+                    model, self.config.hessian_loss_fn,
+                    train_batch=batch, val_batch=batch,
+                    model_type=model.model_type, step=step
+                )
+                self.analysis_results['hessian'][step] = hessian_results
             except Exception as e:
                 print(f"Hessian analysis failed: {e}")
 
@@ -341,49 +355,6 @@ class TrainingCallbacks:
         """
         # TODO: Similar to linguistic probes but for semantic roles
         print(f"Semantic probe monitoring at step {step} (placeholder)")
-        pass
-
-    def _run_hessian_analysis(self, model, batch, step: int, val_loader=None):
-        """
-        Run Hessian analysis (placeholder for original Hessian logic).
-
-        Args:
-            model: Training model
-            batch: Current batch
-            step: Current training step
-            val_loader: Validation loader
-        """
-        # TODO: Implement the Hessian analysis from original code
-        # This includes:
-        # - Basic Hessian eigenvalues
-        # - Component-specific Hessian metrics
-        # - Gradient-Hessian alignment
-        # - Train-val landscape divergence
-
-        print(f"Hessian analysis at step {step} (placeholder)")
-
-        # Placeholder for original Hessian logic:
-        # try:
-        #     with torch.no_grad():
-        #         original_state = copy.deepcopy(model.state_dict())
-        #
-        #     eigenvalues, _ = get_hessian_eigenvectors(...)
-        #     hessian_metrics = compute_detailed_hessian_metrics(eigenvalues)
-        #     self.analysis_results['hessian'][step] = hessian_metrics
-        #
-        #     if self.config.track_component_hessian:
-        #         component_metrics = compute_component_hessians(...)
-        #         # Store component results
-        #
-        #     if self.config.track_gradient_alignment:
-        #         alignment_metrics = compute_hessian_gradient_alignment(...)
-        #         # Store alignment results
-        #
-        #     # Restore model state
-        #     model.load_state_dict(original_state)
-        # except Exception as e:
-        #     print(f"Hessian computation error: {e}")
-
         pass
 
     def _track_gradients(self, model, step: int):
@@ -460,8 +431,27 @@ class TrainingCallbacks:
         if self.hessian_analyzer and self.analysis_results['hessian']:
             try:
                 print("Generating Hessian visualizations...")
-                # TODO: Generate Hessian plots when module is refactored
-                pass
+                self.hessian_analyzer.visualizer.plot_eigenvalue_evolution(
+                    hessian_history=self.analysis_results['hessian'], model_name= model_name,
+                )
+                self.hessian_analyzer.visualizer.plot_eigenvalue_heatmap(
+                    hessian_history=self.analysis_results['hessian'], model_name= model_name,
+                )
+
+                # We check one by one for the hessian visualizations
+                if self.hessian_analyzer.config.track_component_hessian: #components
+                    self.hessian_analyzer.visualizer.plot_component_comparison(
+                        hessian_history=self.analysis_results['hessian'], model_name=model_name,
+                    )
+                if self.hessian_analyzer.config.track_gradient_alignment: #alignment
+                    self.hessian_analyzer.visualizer.plot_gradient_alignment(
+                        hessian_history=self.analysis_results['hessian'], model_name=model_name,
+                    )
+                # memorization
+                if self.hessian_analyzer.config.track_train_val_landscape_divergence: #train-val divergence
+                    self.hessian_analyzer.visualizer.plot_memorization_metrics(
+                        hessian_history=self.analysis_results['hessian'], model_name=model_name,
+                )
             except Exception as e:
                 print(f"Failed to generate Hessian visualizations: {e}")
 
