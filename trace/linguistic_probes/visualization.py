@@ -36,11 +36,12 @@ class ProbesVisualizer:
         plt.style.use('seaborn-v0_8-whitegrid')
 
         # Create output directories
-        if log_dir:
-            self.pos_plots_dir = os.path.join(log_dir, 'pos_probe_analysis')
-            self.semantic_plots_dir = os.path.join(log_dir, 'semantic_probe_analysis')
-            os.makedirs(self.pos_plots_dir, exist_ok=True)
-            os.makedirs(self.semantic_plots_dir, exist_ok=True)
+        if not log_dir:
+            log_dir = './analysis_results'
+        self.pos_plots_dir = os.path.join(log_dir, 'pos_probe_analysis')
+        self.semantic_plots_dir = os.path.join(log_dir, 'semantic_probe_analysis')
+        os.makedirs(self.pos_plots_dir, exist_ok=True)
+        os.makedirs(self.semantic_plots_dir, exist_ok=True)
 
     def save_metrics(
             self,

@@ -18,11 +18,11 @@ class OutputMonitoringConfig:
 
     # POS monitoring settings
     track_pos_performance: bool = True
-    pos_granularity: str = 'basic'  # 'basic' (8 categories) or 'detailed' (14 categories)
+    pos_granularity: str = 'basic'
 
     # Semantic role monitoring settings
     track_semantic_roles: bool = False
-    semantic_granularity: str = 'basic'  # 'basic' (8 roles) or 'detailed' (15 roles)
+    semantic_granularity: str = 'basic'
 
     # Visualization and saving
     save_visualizations: bool = True  # Whether to save visualizations
