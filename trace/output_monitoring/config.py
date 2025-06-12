@@ -31,6 +31,9 @@ class OutputMonitoringConfig:
     save_visualizations: bool = True  # Whether to save visualizations
     log_dir: Optional[str] = None
 
+    device: str = "cpu"  # Device to run monitoring on (e.g., 'cuda' or 'cpu')
+
+
     def __post_init__(self):
         """Validate configuration parameters."""
         if self.model_type not in ['encoder_only', 'decoder_only', 'encoder_decoder']:
