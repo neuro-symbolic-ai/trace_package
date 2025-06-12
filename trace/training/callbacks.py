@@ -163,7 +163,7 @@ class TrainingCallbacks:
                 lr=self.config.semantic_probe_lr,
                 epochs=self.config.semantic_probe_epochs,
                 log_dir=self.config.log_dir,
-                save_visualizations=True,
+                save_visualizations=self.config.save_visualization,
                 device=self.device
             )
             self.probe_semantic_analyzer = SemanticAnalyzer(semantic_config)
@@ -213,10 +213,10 @@ class TrainingCallbacks:
         if self.config.track_pos_performance:
             pos_performance_config = OutputMonitoringConfig(
                 model_type=self.config.model_type,
-                track_pos_performance=True,
+                track_pos_performance=self.config.track_pos_performance,
                 pos_granularity=self.config.pos_granularity,
                 track_semantic_roles=False,  # Not used here
-                save_visualizations=False,  # Not implemented yet
+                save_visualizations=self.config.save_visualization,
                 device=self.device
             )
             self.pos_tracker = OutputMonitoringAnalyzer(pos_performance_config)
@@ -230,9 +230,9 @@ class TrainingCallbacks:
             semantic_performance_config = OutputMonitoringConfig(
                 model_type=self.config.model_type,
                 track_pos_performance=False,  # Not used here
-                track_semantic_roles=True,
+                track_semantic_roles=self.config.track_semantic_roles_performance,
                 semantic_granularity=self.config.semantic_granularity,
-                save_visualizations=False,  # Not implemented yet
+                save_visualizations=self.config.save_visualization,
                 device=self.device
             )
             self.semantic_role_tracker = OutputMonitoringAnalyzer(semantic_performance_config)
@@ -318,29 +318,6 @@ class TrainingCallbacks:
                 print(f"Semantic analysis completed - {len(semantic_results)} layers analyzed")
             except Exception as e:
                 print(f"Semantic probes analysis failed: {e}")
-
-        # if self.pos_linguistic_analyzer:
-        #     try:
-        #         print("Running linguistic probes analysis...")
-        #         # Use the POSAnalyzer to perform analysis
-        #         pos_results = self.pos_linguistic_analyzer.analyze(
-        #             model, batch_loader, model_name=f"step_{step}"
-        #         )
-        #         self.analysis_results['linguistic_probes'][step] = pos_results
-        #         print("Monitoring linguistic probes...TODO")
-        #         # This should monitor confidence scores over time
-        #         self._monitor_linguistic_probes(hidden_states, step)
-        #     except Exception as e:
-        #         print(f"Linguistic probes analysis failed: {e}")
-        #
-        # # Run semantic probes analysis
-        # if self.semantic_analyzer:
-        #     try:
-        #         print("Running semantic probes analysis...")
-        #         # TODO: Implement semantic probe monitoring
-        #         self._monitor_semantic_probes(hidden_states, step)
-        #     except Exception as e:
-        #         print(f"Semantic probes analysis failed: {e}")
 
         # Run intrinsic dimensions analysis
         if self.intrinsic_analyzer:
@@ -512,6 +489,28 @@ class TrainingCallbacks:
             except Exception as e:
                 print(f"Failed to generate intrinsic dimensions visualizations: {e}")
 
+        # Generate POS performance visualizations
+        if self.pos_tracker and self.analysis_results['output_pos_performance']:
+            try:
+                print("Generating POS performance visualizations...")
+                self.pos_tracker.visualizer.plot_pos_performance_evolution(
+                    monitoring_results=self.analysis_results['output_pos_performance'],
+                    model_name=model_name,
+                )
+            except Exception as e:
+                print(f"Failed to generate POS performance visualizations: {e}")
+        # Generate semantic role visualizations
+        if self.semantic_role_tracker and self.analysis_results['output_semantic_roles_performance']:
+            try:
+                print("Generating semantic role visualizations...")
+                self.semantic_role_tracker.visualizer.plot_semantic_role_performance_evolution(
+                    monitoring_results=self.analysis_results['output_semantic_roles_performance'],
+                    model_name=model_name,
+                )
+            except Exception as e:
+                print(f"Failed to generate semantic role visualizations: {e}")
+
+
         # Generate Hessian visualizations
         if self.hessian_analyzer and self.analysis_results['hessian']:
             try:
@@ -540,20 +539,7 @@ class TrainingCallbacks:
             except Exception as e:
                 print(f"Failed to generate Hessian visualizations: {e}")
 
-        # Generate POS performance visualizations
-        if self.pos_tracker and self.analysis_results['output_pos_performance']:
-            try:
-                print("Generating POS performance visualizations...")
-                pass
-            except Exception as e:
-                print(f"Failed to generate POS performance visualizations: {e}")
-        # Generate semantic role visualizations
-        if self.semantic_role_tracker and self.analysis_results['output_semantic_roles_performance']:
-            try:
-                print("Generating semantic role visualizations...")
-                pass
-            except Exception as e:
-                print(f"Failed to generate semantic role visualizations: {e}")
+
 
         # Generate gradient visualizations
         if self.config.track_gradients and self.analysis_results['grad_similarities_history']:

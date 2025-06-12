@@ -1,5 +1,3 @@
-# output_monitoring/analysis.py
-
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 
@@ -7,7 +5,9 @@ import torch
 
 from .config import OutputMonitoringConfig
 from .utils import extract_output_monitoring_data
+from .visualization import OutputMonitoringVisualizer
 from ..linguistic_probes import POSTagger, SemanticTagger
+
 
 class OutputMonitoringAnalyzer:
     """
@@ -40,6 +40,8 @@ class OutputMonitoringAnalyzer:
             self.semantic_tagger = None
 
         self.device = self.config.device or ("cuda" if torch.cuda.is_available() else "cpu")
+        # adding visualizer
+        self.visualizer = OutputMonitoringVisualizer(config=self.config) if self.config.save_visualizations else None
 
     def analyze(self,
                 batch: Dict[str, Any],

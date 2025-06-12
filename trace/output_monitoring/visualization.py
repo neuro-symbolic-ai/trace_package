@@ -39,7 +39,7 @@ class OutputMonitoringVisualizer:
         self.semantic_performance_dir = os.path.join(self.plots_dir, 'output_semantic_performance')
         os.makedirs(self.plots_dir, exist_ok=True)
 
-    def plot_pos_accuracy_evolution(
+    def plot_pos_performance_evolution(
             self,
             monitoring_results: Dict[int, Dict[str, Any]],
             model_name: str = '',
@@ -103,7 +103,7 @@ class OutputMonitoringVisualizer:
         plt.show()
         plt.close()
 
-    def plot_semantic_accuracy_evolution(
+    def plot_semantic_role_performance_evolution(
             self,
             monitoring_results: Dict[int, Dict[str, Any]],
             model_name: str = '',

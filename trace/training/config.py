@@ -63,10 +63,7 @@ class TrainingConfig:
     hessian_loss_fn:  Optional[torch.nn.Module()] = torch.nn.CrossEntropyLoss()  # Loss function for Hessian computation
 
     # Visualization options
-    create_training_plots: bool = True
-    analyze_embeddings: bool = True
-    analyze_attention: bool = False
-    analyze_token_importance: bool = False
+    save_visualization: bool = True
 
     # Linguistic probes tracking
     track_linguistic_probes: bool = True
@@ -214,9 +211,7 @@ class TrainingConfig:
         config_dict['track_semantic_roles'] = getattr(args, 'track_semantic_roles', False)
 
         # Visualization
-        config_dict['create_training_plots'] = getattr(args, 'create_training_plots', False)
-        config_dict['analyze_embeddings'] = getattr(args, 'analyze_embeddings', False)
-        config_dict['log_only_at_epoch_end'] = getattr(args, 'log_only_at_epoch_end', False)
+        config_dict['save_visualization'] = getattr(args, 'save_visualization', False)
 
         # Device and seed
         config_dict['device'] = getattr(args, 'device', 'auto')

@@ -64,7 +64,6 @@ def extract_output_monitoring_data(
         Dictionary containing POS and semantic accuracy results
     """
     results = {}
-    print(f"Extracting output monitoring data with config: {config}")
 
     # Get predictions and true tokens
     predicted_tokens = torch.argmax(outputs, dim=-1).cpu().tolist() # predictions = torch.argmax(logits, dim=-1).cpu()
