@@ -25,7 +25,7 @@ class LinguisticProbesConfig:
     # Analysis toggles
     track_pos: bool = True
     track_semantic: bool = True
-    track_performance_over_time: bool = True
+    # track_performance_over_time: bool = True # legacy option, not used in the current implementation
 
     # Special options - which layers to probe
     layer_indices: Optional[Union[List[int], Dict[str, List[int]]]] = None
