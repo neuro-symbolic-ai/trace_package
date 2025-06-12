@@ -180,7 +180,7 @@ def setup_hidden_state_hooks(model: nn.Module) -> Dict[str, torch.Tensor]:
 
         return hook
 
-    # Attach hooks based on model architecture
+    # Attach hooks based on model architecture - imitate run with hooks from transformerlens
     if hasattr(model, 'encoder') and model.encoder is not None:
         for idx, layer in enumerate(model.encoder.layers):
             layer.register_forward_hook(save_hidden_state(f"encoder_layer_{idx}"))
@@ -191,21 +191,6 @@ def setup_hidden_state_hooks(model: nn.Module) -> Dict[str, torch.Tensor]:
 
     return hidden_states
 
-
-def get_device_from_string(device_str: str) -> torch.device:
-    """
-    Convert device string to torch.device, with auto-detection.
-
-    Args:
-        device_str: Device string ('auto', 'cpu', 'cuda', etc.)
-
-    Returns:
-        torch.device object
-    """
-    if device_str == 'auto':
-        return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    else:
-        return torch.device(device_str)
 
 
 def set_seed(seed: int):

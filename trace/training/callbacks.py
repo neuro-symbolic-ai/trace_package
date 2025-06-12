@@ -8,9 +8,8 @@ from collections import defaultdict
 
 from ..hessian import HessianAnalyzer, HessianConfig
 # Import the refactored modules
-from ..linguistic_probes import LinguisticProbesConfig, POSAnalyzer, SemanticAnalyzer
+from ..linguistic_probes import LinguisticProbesConfig, POSAnalyzer, SemanticAnalyzer, MultiLabelProbe
 from ..intrisic_dimensions import IntrinsicDimensionAnalyzer, IntrinsicDimensionsConfig
-
 
 
 class TrainingCallbacks:
@@ -50,7 +49,8 @@ class TrainingCallbacks:
         # with open(analysis_results_path, 'w') as f:
         #     json.dump(analysis_results, f, indent=4)
         print(f"Analysis results saved to {analysis_results_path}")
-
+        print(analysis_results.keys())
+        print(analysis_results.get('results', {}).keys())
         def save_json_data(data, filename, save_dir="./logs"):
             if not data:
                 return
@@ -91,11 +91,15 @@ class TrainingCallbacks:
             os.makedirs(intrinsic_dim_log_dir, exist_ok=True)
             save_json_data(analysis_results.get('results').get('intrinsic_dimensions'), 'intrinsic_dimension_history.json', intrinsic_dim_log_dir)
 
+        if analysis_results.get('results').get('linguistic_probes'):
+            pos_probe_log_dir = os.path.join(analysis_results_path, 'pos_probe_analysis')
+            os.makedirs(pos_probe_log_dir, exist_ok=True)
+            save_json_data(analysis_results.get('results').get('linguistic_probes'), 'pos_probe_history.json', pos_probe_log_dir)
 
-        if analysis_results.get('linguistic_probes'):
-            print("Linguistic probes results:", analysis_results['linguistic_probes'])
-        if analysis_results.get('semantic_probes'):
-            print("Semantic probes results:", analysis_results['semantic_probes'])
+        if analysis_results.get('results').get('semantic_probes'):
+            semantic_probe_log_dir = os.path.join(analysis_results_path, 'semantic_probe_analysis')
+            os.makedirs(semantic_probe_log_dir, exist_ok=True)
+            save_json_data(analysis_results.get('results').get('semantic_probes'), 'semantic_probe_history.json', semantic_probe_log_dir)
 
         if analysis_results.get('results').get('hessian'):
             hessian_log_dir = os.path.join(analysis_results_path, 'hessian')
@@ -121,33 +125,53 @@ class TrainingCallbacks:
             probe_config = LinguisticProbesConfig(
                 probe_type=self.config.probe_type,
                 layer_indices=self.config.probe_layers,
-                probe_load_path=self.config.probe_load_path,
                 num_classes=self.config.probe_num_features,
                 hidden_dim=self.config.probe_hidden_dim,
                 lr=self.config.probe_lr,
                 epochs=self.config.probe_epochs,
                 log_dir=self.config.plots_path,
-                save_visualizations=True
+                save_visualizations=True,
+                device=self.device
             )
+
             self.pos_linguistic_analyzer = POSAnalyzer(probe_config)
+
+            # Load pre-trained probes if paths provided
+            if hasattr(self.config, 'probe_load_paths') and self.config.probe_load_paths:
+                self.pos_linguistic_analyzer.load_probes(self.config.probe_load_paths)
+                print(f"Loaded POS probes from: {self.config.probe_load_paths}")
+            else:
+                print("Warning: No probe paths provided - analysis will skip layers without probes")
+                self.track_linguistic_probe = False  # Disable semantic tracking if no probes are loaded
+                self.pos_linguistic_analyzer = None  # Set to None if no probes are loaded
         else:
             self.pos_linguistic_analyzer = None
 
-        # Semantic Probes Analyzer (same structure as linguistic)
+        # Semantic Probes Analyzer
         if self.config.track_semantic_probes:
             print("Setting up semantic probes analyzer...")
             semantic_config = LinguisticProbesConfig(
                 probe_type=self.config.semantic_probe_type,
                 layer_indices=self.config.semantic_probe_layers,
-                probe_load_path=self.config.semantic_probe_load_path,
                 num_classes=self.config.semantic_probe_num_features,
                 hidden_dim=self.config.semantic_probe_hidden_dim,
                 lr=self.config.semantic_probe_lr,
                 epochs=self.config.semantic_probe_epochs,
                 log_dir=self.config.plots_path,
-                save_visualizations=True
+                save_visualizations=True,
+                device=self.device
             )
+
             self.semantic_analyzer = SemanticAnalyzer(semantic_config)
+
+            # Load pre-trained probes if paths provided
+            if hasattr(self.config, 'semantic_probe_load_path') and self.config.semantic_probe_load_path:
+                self.semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
+                print(f"Loaded semantic probes from: {self.config.semantic_probe_load_path}")
+            else:
+                print("Warning: No semantic probe paths provided - analysis will skip layers without probes")
+                self.track_semantic_probes = False  # Disable semantic tracking if no probes are loaded
+                self.semantic_analyzer = None  # Set to None if no probes are loaded
         else:
             self.semantic_analyzer = None
 
@@ -181,6 +205,7 @@ class TrainingCallbacks:
             print("Hessian analysis will be added when module is refactored")
         else:
             self.hessian_analyzer = None
+
         # TODO: Add other analyzers when refactored
         # POS Performance Tracker (placeholder)
         if self.config.track_pos_performance:
@@ -252,10 +277,12 @@ class TrainingCallbacks:
         if self.pos_linguistic_analyzer:
             try:
                 print("Running linguistic probes analysis...")
-                # TODO: Implement probe monitoring logic from original code
-                print("Monitoring linguistic probes...TODO")
-                # This should monitor confidence scores over time
-                self._monitor_linguistic_probes(hidden_states, step)
+                # Use the updated analyzer that works with pre-trained probes
+                pos_results = self.pos_linguistic_analyzer.analyze(
+                    model, batch_loader, tokenizer=self.tokenizer, model_name=f"step_{step}"
+                )
+                self.analysis_results['linguistic_probes'][step] = pos_results
+                print(f"POS analysis completed - {len(pos_results)} layers analyzed")
             except Exception as e:
                 print(f"Linguistic probes analysis failed: {e}")
 
@@ -263,10 +290,36 @@ class TrainingCallbacks:
         if self.semantic_analyzer:
             try:
                 print("Running semantic probes analysis...")
-                # TODO: Implement semantic probe monitoring
-                self._monitor_semantic_probes(hidden_states, step)
+                semantic_results = self.semantic_analyzer.analyze(
+                    model, batch_loader, model_name=f"step_{step}", tokenizer=self.tokenizer,
+                )
+                self.analysis_results['semantic_probes'][step] = semantic_results
+                print(f"Semantic analysis completed - {len(semantic_results)} layers analyzed")
             except Exception as e:
                 print(f"Semantic probes analysis failed: {e}")
+
+        # if self.pos_linguistic_analyzer:
+        #     try:
+        #         print("Running linguistic probes analysis...")
+        #         # Use the POSAnalyzer to perform analysis
+        #         pos_results = self.pos_linguistic_analyzer.analyze(
+        #             model, batch_loader, model_name=f"step_{step}"
+        #         )
+        #         self.analysis_results['linguistic_probes'][step] = pos_results
+        #         print("Monitoring linguistic probes...TODO")
+        #         # This should monitor confidence scores over time
+        #         self._monitor_linguistic_probes(hidden_states, step)
+        #     except Exception as e:
+        #         print(f"Linguistic probes analysis failed: {e}")
+        #
+        # # Run semantic probes analysis
+        # if self.semantic_analyzer:
+        #     try:
+        #         print("Running semantic probes analysis...")
+        #         # TODO: Implement semantic probe monitoring
+        #         self._monitor_semantic_probes(hidden_states, step)
+        #     except Exception as e:
+        #         print(f"Semantic probes analysis failed: {e}")
 
         # Run intrinsic dimensions analysis
         if self.intrinsic_analyzer:
@@ -315,47 +368,48 @@ class TrainingCallbacks:
         if self.config.track_gradients:
             try:
                 print("Running gradient analysis...")
-                self._track_gradients(model, step)
+                # self._track_gradients(model, step)
             except Exception as e:
                 print(f"Gradient analysis failed: {e}")
 
-    def _monitor_linguistic_probes(self, hidden_states: Dict[str, torch.Tensor], step: int):
-        """
-        Monitor linguistic probe predictions (from original code logic).
 
-        Args:
-            hidden_states: Dictionary of layer hidden states
-            step: Current training step
-        """
-        # TODO: Implement the probe monitoring logic from original train_model
-        # This should load pre-trained probes and monitor their confidence scores
-
-        # Placeholder for the monitoring logic that was in the original code:
-        # with torch.no_grad():
-        #     for name, probe in probes.items():
-        #         if name not in hidden_states:
-        #             continue
-        #         hidden = hidden_states[name]
-        #         hidden_mean = hidden.mean(dim=1)
-        #         preds = probe(hidden_mean)
-        #         avg_conf = preds.mean(dim=0).cpu().numpy()
-        #         for tag_idx, score in enumerate(avg_conf):
-        #             probe_predictions[name][tag_idx].append((step, score))
-
-        print(f"Linguistic probe monitoring at step {step} (placeholder)")
-        pass
-
-    def _monitor_semantic_probes(self, hidden_states: Dict[str, torch.Tensor], step: int):
-        """
-        Monitor semantic probe predictions.
-
-        Args:
-            hidden_states: Dictionary of layer hidden states
-            step: Current training step
-        """
-        # TODO: Similar to linguistic probes but for semantic roles
-        print(f"Semantic probe monitoring at step {step} (placeholder)")
-        pass
+    # def _monitor_linguistic_probes(self, hidden_states: Dict[str, torch.Tensor], step: int):
+    #     """
+    #     Monitor linguistic probe predictions (from original code logic).
+    #
+    #     Args:
+    #         hidden_states: Dictionary of layer hidden states
+    #         step: Current training step
+    #     """
+    #     # TODO: Implement the probe monitoring logic from original train_model
+    #     # This should load pre-trained probes and monitor their confidence scores
+    #
+    #     # Placeholder for the monitoring logic that was in the original code:
+    #     # with torch.no_grad():
+    #     #     for name, probe in probes.items():
+    #     #         if name not in hidden_states:
+    #     #             continue
+    #     #         hidden = hidden_states[name]
+    #     #         hidden_mean = hidden.mean(dim=1)
+    #     #         preds = probe(hidden_mean)
+    #     #         avg_conf = preds.mean(dim=0).cpu().numpy()
+    #     #         for tag_idx, score in enumerate(avg_conf):
+    #     #             probe_predictions[name][tag_idx].append((step, score))
+    #
+    #     print(f"Linguistic probe monitoring at step {step} (placeholder)")
+    #     pass
+    #
+    # def _monitor_semantic_probes(self, hidden_states: Dict[str, torch.Tensor], step: int):
+    #     """
+    #     Monitor semantic probe predictions.
+    #
+    #     Args:
+    #         hidden_states: Dictionary of layer hidden states
+    #         step: Current training step
+    #     """
+    #     # TODO: Similar to linguistic probes but for semantic roles
+    #     print(f"Semantic probe monitoring at step {step} (placeholder)")
+    #     pass
 
     def _track_gradients(self, model, step: int):
         """
@@ -401,8 +455,12 @@ class TrainingCallbacks:
         if self.pos_linguistic_analyzer and self.analysis_results['linguistic_probes']:
             try:
                 print("Generating linguistic probe visualizations...")
+                self.pos_linguistic_analyzer.visualizer.plot_probe_confidence_analysis(
+                    confidence_data= self.analysis_results['linguistic_probes'],
+                    model_name=model_name,
+                    analysis_type=self.pos_linguistic_analyzer.get_analysis_type()
+                )
                 # The visualizations should be generated automatically by the analyzer
-                pass
             except Exception as e:
                 print(f"Failed to generate linguistic probe visualizations: {e}")
 
@@ -410,7 +468,11 @@ class TrainingCallbacks:
         if self.semantic_analyzer and self.analysis_results['semantic_probes']:
             try:
                 print("Generating semantic probe visualizations...")
-                pass
+                self.semantic_analyzer.visualizer.plot_probe_confidence_analysis(
+                    confidence_data=self.analysis_results['linguistic_probes'],
+                    model_name=model_name,
+                    analysis_type=self.semantic_analyzer.get_analysis_type()
+                )
             except Exception as e:
                 print(f"Failed to generate semantic probe visualizations: {e}")
 
@@ -419,7 +481,6 @@ class TrainingCallbacks:
             try:
                 print("Generating intrinsic dimensions evolution plots...")
                 # Convert step-wise results to evolution format
-
                 self.intrinsic_analyzer.visualizer.plot_final_id(
                         self.analysis_results['intrinsic_dimensions'], model_name
                 )
@@ -427,7 +488,7 @@ class TrainingCallbacks:
             except Exception as e:
                 print(f"Failed to generate intrinsic dimensions visualizations: {e}")
 
-        # Generate Hessian visualizations (placeholder)
+        # Generate Hessian visualizations
         if self.hessian_analyzer and self.analysis_results['hessian']:
             try:
                 print("Generating Hessian visualizations...")
@@ -455,8 +516,23 @@ class TrainingCallbacks:
             except Exception as e:
                 print(f"Failed to generate Hessian visualizations: {e}")
 
+        # Generate POS performance visualizations
+        if self.pos_tracker and self.analysis_results['pos_performance']:
+            try:
+                print("Generating POS performance visualizations...")
+                pass
+            except Exception as e:
+                print(f"Failed to generate POS performance visualizations: {e}")
+        # Generate semantic role visualizations
+        if self.semantic_role_tracker and self.analysis_results['semantic_roles']:
+            try:
+                print("Generating semantic role visualizations...")
+                pass
+            except Exception as e:
+                print(f"Failed to generate semantic role visualizations: {e}")
+
         # Generate gradient visualizations
-        if self.config.track_gradients and self.grad_similarities_history:
+        if self.config.track_gradients and self.analysis_results['grad_similarities_history']:
             try:
                 print("Generating gradient visualizations...")
                 # TODO: Implement gradient plotting
@@ -466,23 +542,23 @@ class TrainingCallbacks:
 
         print("Final visualizations completed!")
 
-    def _convert_to_evolution_format(self, step_results: Dict[int, Dict]) -> Dict:
-        """
-        Convert step-wise results to evolution format for plotting.
-
-        Args:
-            step_results: Dictionary mapping steps to analysis results
-
-        Returns:
-            Dictionary in evolution format for visualization
-        """
-        evolution_data = defaultdict(list)
-
-        for step, results in step_results.items():
-            for layer_key, value in results.items():
-                evolution_data[layer_key].append((step, value))
-
-        return dict(evolution_data)
+    # def _convert_to_evolution_format(self, step_results: Dict[int, Dict]) -> Dict:
+    #     """
+    #     Convert step-wise results to evolution format for plotting.
+    #
+    #     Args:
+    #         step_results: Dictionary mapping steps to analysis results
+    #
+    #     Returns:
+    #         Dictionary in evolution format for visualization
+    #     """
+    #     evolution_data = defaultdict(list)
+    #
+    #     for step, results in step_results.items():
+    #         for layer_key, value in results.items():
+    #             evolution_data[layer_key].append((step, value))
+    #
+    #     return dict(evolution_data)
 
     def get_analysis_summary(self) -> Dict[str, Any]:
         """

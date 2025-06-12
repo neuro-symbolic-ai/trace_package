@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any, Union, Tuple
 import os
 
 import torch
@@ -40,14 +40,14 @@ class TrainingConfig:
     log_steps: int = 100
     log_only_at_epoch_end: bool = False
     save_path: str = "../models/model.pt"
-    plots_path: Optional[str] = "../plots"
+    plots_path: Optional[str] = "../analysis_results"
 
     # Analysis tracking intervals
     track_interval: int = 1000
     max_history: int = 10
 
     # Gradient analysis
-    track_gradients: bool = True
+    track_gradients: bool = False
     track_layers: Optional[List[str]] = None
     track_last_token: bool = False
     gradient_save_dir: Optional[str] = None
@@ -58,7 +58,6 @@ class TrainingConfig:
     track_component_hessian: bool = True
     component_list: Optional[List[str]] = None
     track_gradient_alignment: bool = True
-    track_sharpness: bool = True
     track_train_val_landscape_divergence: bool = True
     save_hessian_data: bool = True
     hessian_loss_fn:  Optional[torch.nn.Module()] = torch.nn.CrossEntropyLoss()  # Loss function for Hessian computation
@@ -72,23 +71,28 @@ class TrainingConfig:
     # Linguistic probes tracking
     track_linguistic_probes: bool = True
     probe_layers: Optional[Union[List[int], Dict[str, List[int]]]] = None
-    probe_load_path: Optional[str] = None
+    probe_input_dim: int = 64  # Input dimension for the probe
+    probe_load_paths: Optional[Dict[Tuple[int, str], str]] = None # Path to load existing probes if needed key is layer name, value is path
     probe_num_features: int = 8
     probe_hidden_dim: int = 128
     probe_lr: float = 0.001
     probe_epochs: int = 10
     probe_type: str = "multilabel"  # 'linear' or 'multilabel'
-
+    rand_init_pos_probes: bool = False  # Whether to initialize probes randomly
+    train_pos_probes: bool = False  # Whether to train POS probes
 
     # Semantic probes tracking
     track_semantic_probes: bool = True
     semantic_probe_layers: Optional[Union[List[int], Dict[str, List[int]]]] = None
-    semantic_probe_load_path: Optional[str] = None
+    semantic_probe_load_path:  Optional[Dict[Tuple[int, str], str]] = None # Path to load existing probes if needed key is layer name, value is path
+    semantic_probe_input_dim: int = 64
     semantic_probe_num_features: int = 8
     semantic_probe_hidden_dim: int = 128
     semantic_probe_lr: float = 0.001
     semantic_probe_epochs: int = 10
     semantic_probe_type: str = "multilabel"  # 'linear' or 'multilabel'
+    rand_init_semantic_probes: bool = False  # Whether to initialize semantic probes randomly
+    train_semantic_probes: bool = False  # Whether to train semantic probes
 
     # Intrinsic dimensions tracking
     track_intrinsic_dimensions: bool = True
@@ -112,9 +116,9 @@ class TrainingConfig:
         # Standardize model type
         self.model_type = self.model_type.replace('-', '_')
 
-        # Set up default paths if not provided
-        if self.plots_path and not self.gradient_save_dir:
-            self.gradient_save_dir = os.path.join(self.plots_path, 'gradient_data')
+        # # Set up default paths if not provided
+        # if self.plots_path and not self.gradient_save_dir:
+        #     self.gradient_save_dir = os.path.join(self.plots_path, 'gradient_data')
 
         # Set up default component list for Hessian analysis
         if self.component_list is None and self.track_component_hessian:
@@ -223,9 +227,5 @@ class TrainingConfig:
         """Create necessary directories for saving results."""
         if self.plots_path:
             os.makedirs(self.plots_path, exist_ok=True)
-
-        if self.gradient_save_dir:
-            os.makedirs(self.gradient_save_dir, exist_ok=True)
-
         # Create save directory
         os.makedirs(os.path.dirname(self.save_path), exist_ok=True)
