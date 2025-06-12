@@ -225,12 +225,16 @@ class Trainer:
 
             # Backward pass
             loss.backward()
-
+            # predictions = torch.argmax(outputs, dim=-1).cpu()
             # Run analysis if needed (before optimizer step to capture gradients)
             if self.callbacks.should_track(self.step_counter):
                 self.callbacks.run_analysis(
                     self.model, batch, self.hidden_states,
-                    self.step_counter, val_loader=None  # Could pass val_loader here
+                    self.step_counter,
+                    val_loader=None,
+                    tokenizer=self.tokenizer,
+                    predictions=outputs
+                    # Could pass val_loader here
                 )
 
             # Apply gradients

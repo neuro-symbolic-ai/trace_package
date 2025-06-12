@@ -24,9 +24,6 @@ class OutputMonitoringConfig:
     track_semantic_roles: bool = False
     semantic_granularity: str = 'basic'  # 'basic' (8 roles) or 'detailed' (15 roles)
 
-    # Data processing
-    max_samples: Optional[int] = None  # Limit samples for memory efficiency
-
     # Visualization and saving
     save_visualizations: bool = True  # Whether to save visualizations
     log_dir: Optional[str] = None

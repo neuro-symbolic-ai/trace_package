@@ -7,9 +7,9 @@ from typing import Dict, Any, Optional, List
 from collections import defaultdict
 
 from ..hessian import HessianAnalyzer, HessianConfig
-# Import the refactored modules
 from ..linguistic_probes import LinguisticProbesConfig, POSAnalyzer, SemanticAnalyzer, MultiLabelProbe
 from ..intrisic_dimensions import IntrinsicDimensionAnalyzer, IntrinsicDimensionsConfig
+from ..output_monitoring import OutputMonitoringConfig, OutputMonitoringAnalyzer
 
 
 class TrainingCallbacks:
@@ -106,10 +106,17 @@ class TrainingCallbacks:
             os.makedirs(hessian_log_dir, exist_ok=True)
             save_json_data(analysis_results.get('results').get('hessian'), 'hessian_history.json', hessian_log_dir)
 
-        if analysis_results.get('pos_performance'):
-            print("POS performance results:", analysis_results['pos_performance'])
-        if analysis_results.get('semantic_roles'):
-            print("Semantic roles results:", analysis_results['semantic_roles'])
+        if analysis_results.get('results').get('output_pos_performance'):
+            # print("POS performance results:", analysis_results.get('results').get('output_pos_performance'))
+            pos_log_dir = os.path.join(analysis_results_path, 'output_pos_performance')
+            os.makedirs(pos_log_dir, exist_ok=True)
+            save_json_data(analysis_results.get('results').get('output_pos_performance'), 'output_pos_performance.json', pos_log_dir)
+        if analysis_results.get('results').get('output_semantic_roles_performance'):
+            # print("Semantic roles results:", analysis_results.get('results').get('output_semantic_roles_performance'))
+            semantic_log_dir = os.path.join(analysis_results_path, 'output_semantic_roles_performance')
+            os.makedirs(semantic_log_dir, exist_ok=True)
+            save_json_data(analysis_results.get('results').get('output_semantic_roles_performance'), 'output_semantic_roles_performance.json', semantic_log_dir)
+
         if analysis_results.get('gradients'):
             print("Gradient analysis results:", analysis_results['gradients'])
         print("Analysis results summary:")
@@ -129,23 +136,21 @@ class TrainingCallbacks:
                 hidden_dim=self.config.probe_hidden_dim,
                 lr=self.config.probe_lr,
                 epochs=self.config.probe_epochs,
-                log_dir=self.config.plots_path,
+                log_dir=self.config.log_dir,
                 save_visualizations=True,
                 device=self.device
             )
-
-            self.pos_linguistic_analyzer = POSAnalyzer(probe_config)
-
+            self.probe_pos_linguistic_analyzer = POSAnalyzer(probe_config)
             # Load pre-trained probes if paths provided
             if hasattr(self.config, 'probe_load_paths') and self.config.probe_load_paths:
-                self.pos_linguistic_analyzer.load_probes(self.config.probe_load_paths)
+                self.probe_pos_linguistic_analyzer.load_probes(self.config.probe_load_paths)
                 print(f"Loaded POS probes from: {self.config.probe_load_paths}")
             else:
                 print("Warning: No probe paths provided - analysis will skip layers without probes")
                 self.track_linguistic_probe = False  # Disable semantic tracking if no probes are loaded
-                self.pos_linguistic_analyzer = None  # Set to None if no probes are loaded
+                self.probe_pos_linguistic_analyzer = None  # Set to None if no probes are loaded
         else:
-            self.pos_linguistic_analyzer = None
+            self.probe_pos_linguistic_analyzer = None
 
         # Semantic Probes Analyzer
         if self.config.track_semantic_probes:
@@ -157,23 +162,21 @@ class TrainingCallbacks:
                 hidden_dim=self.config.semantic_probe_hidden_dim,
                 lr=self.config.semantic_probe_lr,
                 epochs=self.config.semantic_probe_epochs,
-                log_dir=self.config.plots_path,
+                log_dir=self.config.log_dir,
                 save_visualizations=True,
                 device=self.device
             )
-
-            self.semantic_analyzer = SemanticAnalyzer(semantic_config)
-
+            self.probe_semantic_analyzer = SemanticAnalyzer(semantic_config)
             # Load pre-trained probes if paths provided
             if hasattr(self.config, 'semantic_probe_load_path') and self.config.semantic_probe_load_path:
-                self.semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
+                self.probe_semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
                 print(f"Loaded semantic probes from: {self.config.semantic_probe_load_path}")
             else:
                 print("Warning: No semantic probe paths provided - analysis will skip layers without probes")
                 self.track_semantic_probes = False  # Disable semantic tracking if no probes are loaded
-                self.semantic_analyzer = None  # Set to None if no probes are loaded
+                self.probe_semantic_analyzer = None  # Set to None if no probes are loaded
         else:
-            self.semantic_analyzer = None
+            self.probe_semantic_analyzer = None
 
         # Intrinsic Dimensions Analyzer
         if self.config.track_intrinsic_dimensions:
@@ -182,7 +185,7 @@ class TrainingCallbacks:
                 model_type=self.config.model_type,
                 layers_to_analyze=self.config.id_selected_layers,  # Use same layers as probes
                 id_method=self.config.id_method,
-                log_dir=self.config.plots_path
+                log_dir=self.config.log_dir
             )
             self.intrinsic_analyzer = IntrinsicDimensionAnalyzer(id_config)
         else:
@@ -199,27 +202,44 @@ class TrainingCallbacks:
                 track_train_val_landscape_divergence=self.config.track_train_val_landscape_divergence,
                 save_hessian_data=self.config.save_hessian_data,
                 loss_fn=self.config.hessian_loss_fn,
-                log_dir=self.config.plots_path,
+                log_dir=self.config.log_dir,
             )
             self.hessian_analyzer = HessianAnalyzer(hessian_config)
             print("Hessian analysis will be added when module is refactored")
         else:
             self.hessian_analyzer = None
 
-        # TODO: Add other analyzers when refactored
         # POS Performance Tracker (placeholder)
         if self.config.track_pos_performance:
+            pos_performance_config = OutputMonitoringConfig(
+                model_type=self.config.model_type,
+                track_pos_performance=True,
+                pos_granularity=self.config.pos_granularity,
+                track_semantic_roles=False,  # Not used here
+                save_visualizations=False,  # Not implemented yet
+                device=self.device
+            )
+            self.pos_tracker = OutputMonitoringAnalyzer(pos_performance_config)
             print("POS performance tracking will be added later")
-            self.pos_tracker = None
         else:
             self.pos_tracker = None
 
-        # Semantic Role Tracker (placeholder)
-        if self.config.track_semantic_roles:
+        # Semantic Role Tracker
+        if self.config.track_semantic_roles_performance:
             print("Semantic role tracking will be added later")
-            self.semantic_role_tracker = None
+            semantic_performance_config = OutputMonitoringConfig(
+                model_type=self.config.model_type,
+                track_pos_performance=False,  # Not used here
+                track_semantic_roles=True,
+                semantic_granularity=self.config.semantic_granularity,
+                save_visualizations=False,  # Not implemented yet
+                device=self.device
+            )
+            self.semantic_role_tracker = OutputMonitoringAnalyzer(semantic_performance_config)
         else:
             self.semantic_role_tracker = None
+
+            # TODO: Add other analyzers when refactored
 
     def _setup_tracking_data(self):
         """Initialize data structures for tracking results."""
@@ -234,8 +254,8 @@ class TrainingCallbacks:
             'semantic_probes': {},
             'intrinsic_dimensions': {},
             'hessian': {},
-            'pos_performance': {},
-            'semantic_roles': {}
+            'output_pos_performance': {},
+            'output_semantic_roles_performance': {}
         }
 
         # Step tracking
@@ -253,7 +273,7 @@ class TrainingCallbacks:
         """
         return step % self.config.track_interval == 0 and step > 0
 
-    def run_analysis(self, model, batch, hidden_states, step: int, val_loader=None):
+    def run_analysis(self, model, batch, hidden_states, step: int, val_loader=None, tokenizer=None, predictions=None):
         """
         Run all enabled analysis modules.
 
@@ -263,6 +283,7 @@ class TrainingCallbacks:
             hidden_states: Captured hidden states
             step: Current training step
             val_loader: Validation loader for some analyses
+            tokenizer: Tokenizer for decoding (if needed)
         """
         if not self.should_track(step):
             return
@@ -274,11 +295,11 @@ class TrainingCallbacks:
         batch_loader = [batch]  # Simple wrapper for single batch
 
         # Run linguistic probes analysis
-        if self.pos_linguistic_analyzer:
+        if self.probe_pos_linguistic_analyzer:
             try:
                 print("Running linguistic probes analysis...")
                 # Use the updated analyzer that works with pre-trained probes
-                pos_results = self.pos_linguistic_analyzer.analyze(
+                pos_results = self.probe_pos_linguistic_analyzer.analyze(
                     model, batch_loader, tokenizer=self.tokenizer, model_name=f"step_{step}"
                 )
                 self.analysis_results['linguistic_probes'][step] = pos_results
@@ -287,10 +308,10 @@ class TrainingCallbacks:
                 print(f"Linguistic probes analysis failed: {e}")
 
         # Run semantic probes analysis
-        if self.semantic_analyzer:
+        if self.probe_semantic_analyzer:
             try:
                 print("Running semantic probes analysis...")
-                semantic_results = self.semantic_analyzer.analyze(
+                semantic_results = self.probe_semantic_analyzer.analyze(
                     model, batch_loader, model_name=f"step_{step}", tokenizer=self.tokenizer,
                 )
                 self.analysis_results['semantic_probes'][step] = semantic_results
@@ -346,12 +367,13 @@ class TrainingCallbacks:
             except Exception as e:
                 print(f"Hessian analysis failed: {e}")
 
-        # Run POS performance tracking (placeholder)
+        # Run POS performance tracking
         if self.pos_tracker:
             try:
                 print("Running POS performance tracking...")
-                # TODO: Implement POS tracking
-                pass
+                pos_performance = self.pos_tracker.analyze(batch=batch, outputs=predictions, tokenizer=tokenizer, step=step)
+                self.analysis_results['output_pos_performance'][step] = pos_performance
+
             except Exception as e:
                 print(f"POS performance tracking failed: {e}")
 
@@ -359,8 +381,10 @@ class TrainingCallbacks:
         if self.semantic_role_tracker:
             try:
                 print("Running semantic role tracking...")
-                # TODO: Implement semantic role tracking
-                pass
+                semantic_performance = self.semantic_role_tracker.analyze(
+                    batch=batch, outputs=predictions, tokenizer=tokenizer, step=step
+                )
+                self.analysis_results['output_semantic_roles_performance'][step] = semantic_performance
             except Exception as e:
                 print(f"Semantic role tracking failed: {e}")
 
@@ -452,26 +476,26 @@ class TrainingCallbacks:
         print("Generating final visualizations...")
 
         # Generate linguistic probe visualizations
-        if self.pos_linguistic_analyzer and self.analysis_results['linguistic_probes']:
+        if self.probe_pos_linguistic_analyzer and self.analysis_results['linguistic_probes']:
             try:
                 print("Generating linguistic probe visualizations...")
-                self.pos_linguistic_analyzer.visualizer.plot_probe_confidence_analysis(
+                self.probe_pos_linguistic_analyzer.visualizer.plot_probe_confidence_analysis(
                     confidence_data= self.analysis_results['linguistic_probes'],
                     model_name=model_name,
-                    analysis_type=self.pos_linguistic_analyzer.get_analysis_type()
+                    analysis_type=self.probe_pos_linguistic_analyzer.get_analysis_type()
                 )
                 # The visualizations should be generated automatically by the analyzer
             except Exception as e:
                 print(f"Failed to generate linguistic probe visualizations: {e}")
 
         # Generate semantic probe visualizations
-        if self.semantic_analyzer and self.analysis_results['semantic_probes']:
+        if self.probe_semantic_analyzer and self.analysis_results['semantic_probes']:
             try:
                 print("Generating semantic probe visualizations...")
-                self.semantic_analyzer.visualizer.plot_probe_confidence_analysis(
+                self.probe_semantic_analyzer.visualizer.plot_probe_confidence_analysis(
                     confidence_data=self.analysis_results['linguistic_probes'],
                     model_name=model_name,
-                    analysis_type=self.semantic_analyzer.get_analysis_type()
+                    analysis_type=self.probe_semantic_analyzer.get_analysis_type()
                 )
             except Exception as e:
                 print(f"Failed to generate semantic probe visualizations: {e}")
@@ -517,14 +541,14 @@ class TrainingCallbacks:
                 print(f"Failed to generate Hessian visualizations: {e}")
 
         # Generate POS performance visualizations
-        if self.pos_tracker and self.analysis_results['pos_performance']:
+        if self.pos_tracker and self.analysis_results['output_pos_performance']:
             try:
                 print("Generating POS performance visualizations...")
                 pass
             except Exception as e:
                 print(f"Failed to generate POS performance visualizations: {e}")
         # Generate semantic role visualizations
-        if self.semantic_role_tracker and self.analysis_results['semantic_roles']:
+        if self.semantic_role_tracker and self.analysis_results['output_semantic_roles_performance']:
             try:
                 print("Generating semantic role visualizations...")
                 pass
@@ -571,12 +595,12 @@ class TrainingCallbacks:
             'steps_analyzed': self.tracked_steps,
             'num_steps': len(self.tracked_steps),
             'analysis_modules': {
-                'linguistic_probes': self.pos_linguistic_analyzer is not None,
-                'semantic_probes': self.semantic_analyzer is not None,
+                'linguistic_probes': self.probe_pos_linguistic_analyzer is not None,
+                'semantic_probes': self.probe_semantic_analyzer is not None,
                 'intrinsic_dimensions': self.intrinsic_analyzer is not None,
                 'hessian': self.hessian_analyzer is not None,
-                'pos_performance': self.pos_tracker is not None,
-                'semantic_roles': self.semantic_role_tracker is not None,
+                'output_pos_performance': self.pos_tracker is not None,
+                'output_semantic_roles_performance': self.semantic_role_tracker is not None,
                 'gradients': self.config.track_gradients
             },
             'results': self.analysis_results

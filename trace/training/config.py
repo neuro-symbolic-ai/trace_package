@@ -99,17 +99,18 @@ class TrainingConfig:
     id_method: str = "TwoNN"
     id_selected_layers: Optional[Union[List[int], Dict[str, List[int]]]] = None
 
-    # POS tracking (placeholder for now)
+    # POS tracking
     track_pos_performance: bool = True
     pos_granularity: str = 'basic'
 
-    # Semantic role tracking (placeholder for now)
-    track_semantic_roles: bool = False
+    # Semantic role tracking
+    track_semantic_roles_performance: bool = False
     semantic_granularity: str = 'basic'
 
     # Device and reproducibility
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     seed: int = 42
+    log_dir: Optional[str] = './analysis_results'
 
     def __post_init__(self):
         """Validate and set up derived configurations."""
