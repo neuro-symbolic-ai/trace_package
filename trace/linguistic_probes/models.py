@@ -262,6 +262,10 @@ class MultiLabelProbe(nn.Module):
 
     def load(self, path: str) -> None:
         """Load the probe state."""
-        self.load_state_dict(torch.load(path, map_location=self.device))
+        states = torch.load(path, map_location=self.device)
+        if 'criterion.weight' in states:
+            # Remove criterion weight if it exists (not needed for inference)
+            del states['criterion.weight']
+        self.load_state_dict(states, strict=False)
 
 

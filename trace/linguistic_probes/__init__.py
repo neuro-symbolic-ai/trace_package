@@ -9,7 +9,7 @@ from .utils import (
     prepare_probing_dataset,
     create_one_hot_labels
 )
-
+from .probe_trainer import ProbeTrainer
 # Legacy compatibility imports
 from .analyzers import (
     run_pos_probe_analysis,

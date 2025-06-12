@@ -32,7 +32,7 @@ def extract_hidden_representations_with_pos_semantic(
         Tuple of (hidden_states_dict, pos_labels, semantic_labels)
     """
     model.eval()
-    print('Initial layer indices:', layer_indices)
+    # print('Initial layer indices:', layer_indices)
     # Set default layer indices
     if layer_indices is None:
         if model.model_type == 'encoder_only' and hasattr(model.encoder, 'layers'):
@@ -55,7 +55,7 @@ def extract_hidden_representations_with_pos_semantic(
     elif isinstance(layer_indices, dict):
         layer_indices = layer_indices
 
-    print(f"Extracting hidden states from updated layers: {layer_indices}")
+    # print(f"Extracting hidden states from updated layers: {layer_indices}")
 
     # Initialize hidden states dictionary
     hidden_dict = {}
@@ -103,7 +103,7 @@ def extract_hidden_representations_with_pos_semantic(
     # Register hooks based on model architecture
     if model.model_type != 'encoder_decoder':
         for layer_index in layer_indices['encoder'] if model.model_type == 'encoder_only' else layer_indices['decoder']:
-            print(f"Registering hook for layer {layer_index}")
+            # print(f"Registering hook for layer {layer_index}")
             try:
                 if  model.model_type == 'encoder_only' and hasattr(model.encoder, 'layers'):
                     handle = model.encoder.layers[layer_index].register_forward_hook(save_hidden_state(layer_index, 'encoder'))
@@ -112,6 +112,7 @@ def extract_hidden_representations_with_pos_semantic(
                 handles.append(handle)
             except (AttributeError, IndexError) as e:
                 print(f"Warning: Could not register hook for layer {layer_index}: {e}")
+            # print(f"Hook registered for layer {layer_index} with handle {handle}")
     else:
         # For encoder-decoder models, register hooks for both encoder and decoder layers
         for layer_index in layer_indices['encoder']:
@@ -133,13 +134,16 @@ def extract_hidden_representations_with_pos_semantic(
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Extracting Hidden States"):
             input_ids = batch["input_ids"].to(device)
+            print(f"Input IDs shape: {input_ids.shape}")
             attention_mask = batch.get('attention_mask', None)
             # if attention_mask is not None:
             #     attention_mask = attention_mask.to(device)
 
             # Create labels if tokenizer is provided
             if tokenizer is not None:
-                if config is None or config.track_pos:
+                print("Creating POS labels")
+                if config.track_pos:
+                    print("adding POS labels")
                     pos_labels.append(create_one_hot_pos_labels(input_ids, tokenizer, config))
                 if config is None or config.track_semantic:
                     semantic_labels.append(create_one_hot_semantic_labels(input_ids, tokenizer, config))
@@ -149,6 +153,7 @@ def extract_hidden_representations_with_pos_semantic(
                 _ = model(src=input_ids)
             elif model.model_type == 'decoder_only':
                 # Forward pass for decoder
+                print("Forwarding through decoder-only model")
                 _ = model(tgt=input_ids)
             elif model.model_type == 'encoder_decoder':
                 # Forward pass for encoder
@@ -163,7 +168,6 @@ def extract_hidden_representations_with_pos_semantic(
     # Clean up hooks
     for handle in handles:
         handle.remove()
-
     # Concatenate results
     # hidden_states = {i: torch.cat(hidden_dict[i], dim=0) for i in layer_indices if hidden_dict[i]}
     hidden_states = {}
@@ -184,7 +188,6 @@ def extract_hidden_representations_with_pos_semantic(
     # Concatenate labels if available
     final_pos_labels = torch.cat(pos_labels, dim=0) if pos_labels else None
     final_semantic_labels = torch.cat(semantic_labels, dim=0) if semantic_labels else None
-
     return hidden_states, final_pos_labels, final_semantic_labels
 
 
@@ -246,6 +249,7 @@ def create_one_hot_pos_labels(
     Returns:
         One-hot encoded POS labels
     """
+    print("Creating one-hot POS labels...")
     if config is None: # fallback to default config
         config = LinguisticProbesConfig.default()
 

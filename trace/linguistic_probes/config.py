@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Union
+from typing import Optional, List, Dict, Union, Tuple
 
 
 @dataclass
@@ -9,6 +9,7 @@ class LinguisticProbesConfig:
     """
 
     # Probe architecture
+    input_dim: int = None  # Input dimension for the probe (e.g., BERT hidden size)
     probe_type: str = "multilabel"  # 'linear' or 'multilabel'
     num_classes: int = 8  # Number of classes for classification probes
     hidden_dim: int = 128  # Hidden dimension for MLP probes
@@ -45,7 +46,8 @@ class LinguisticProbesConfig:
     save_visualizations: bool = True
     save_path: Optional[str] = None
     log_dir: Optional[str] = None
-    probe_load_path: Optional[str] = None  # Path to load existing probes if needed
+    probe_load_path: Union[Optional[str], Dict[Tuple[int, str], str]] = None  # Path to load existing probes if needed
+
 
     def __post_init__(self):
         """Validate configuration parameters."""
