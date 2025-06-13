@@ -192,6 +192,7 @@ logits = encoder_decoder_model(src=src_ids, tgt=tgt_ids)
 print(f"Output shape: {logits.shape}")  # [2, 10, 32128]
 ```
 
+# Using Individual Analysis Modules
 ## Intrinsic Dimensions Analysis
 
 TRACE provides comprehensive tools for analyzing the intrinsic dimensionality of transformer representations using advanced geometric methods. This helps understand how models compress and organize information across layers.
@@ -697,3 +698,109 @@ visualizer.plot_probe_confidence_analysis(
     show_plots=False
 )
 ```
+
+## Output Monitoring
+
+TRACE's Output Monitoring module provides real-time analysis of model output quality by tracking linguistic accuracy across different grammatical and semantic categories during training. 
+
+### Key Features
+- **POS Accuracy Tracking**: Track part-of-speech accuracy by category (nouns, verbs, adjectives, etc.)
+- **Semantic Role Monitoring**: Monitor semantic role labeling accuracy (agents, patients, actions, etc.)
+- **Category-specific Insights**: Identify which linguistic categories your model struggles with most
+- **Training Evolution Visualization**: See how output quality improves over training steps
+
+### Basic usage
+
+```python
+from trace.output_monitoring import OutputMonitoringAnalyzer, OutputMonitoringConfig
+
+# Configure output monitoring
+config = OutputMonitoringConfig(
+    track_pos_performance=True,        # Track POS accuracy
+    track_semantic_roles=True,         # Track semantic role accuracy
+    pos_granularity='basic',           # 'basic' or 'detailed'
+    semantic_granularity='basic',      # 'basic' or 'detailed'
+    save_visualizations=True,          # Generate plots
+    log_dir="./analysis_results",     # Save results here
+    show_plots=False                   # Don't display plots during training
+)
+
+# Initialize analyzer
+output_analyzer = OutputMonitoringAnalyzer(config) # alternatively, use OutputMonitoringAnalyzer.default() for default settings
+
+# Integrate into training loop
+def training_step_with_output_monitoring(model, batch, step):
+    # Forward pass
+    outputs = model(**batch)
+    logits = outputs.logits
+    
+    # Calculate loss and do backward pass
+    loss = loss_function(logits, batch['labels'])
+    loss.backward()
+    optimizer.step()
+    all_monitoring_results = {}
+    # Monitor output quality every 50 steps
+    if step % 50 == 0:
+        monitoring_results = output_analyzer.analyze(
+            batch=batch,
+            outputs=logits,
+            tokenizer=output_analyzer,
+            step=step
+        )
+        
+        # Log results
+        if 'pos_accuracy' in monitoring_results:
+            for category, accuracy in monitoring_results['pos_accuracy'].items():
+                print(f"Step {step} - POS {category}: {accuracy:.3f}")
+        
+        
+        if 'semantic_accuracy' in monitoring_results:
+            for category, accuracy in monitoring_results['semantic_accuracy'].items():
+                print(f"Step {step} - Semantic {category}: {accuracy:.3f}")
+                
+        all_monitoring_results[step] = monitoring_results
+
+    # Generate final analysis
+    output_analyzer.visualizer.plot_pos_performance_evolution(
+        output_analyzer, "my_model", save_plot=True
+    )
+    
+    output_analyzer.visualizer.plot_semantic_role_performance_evolution(
+        all_monitoring_results, "my_model", save_plot=True
+    )
+    
+    return all_monitoring_results
+```
+
+### Output Visualization
+
+Generate comprehensive visualizations and export data:
+
+```python
+from trace.output_monitoring import OutputMonitoringVisualizer
+
+# Initialize visualizer
+output_visualizer = OutputMonitoringVisualizer(
+    log_dir="./monitoring_visualizations",
+    config=config
+)
+
+# Plot POS accuracy evolution
+output_visualizer.plot_pos_performance_evolution(
+    monitoring_results=all_monitoring_results,
+    model_name="transformer_v2",
+    save_plot=True
+)
+
+# Plot semantic role accuracy evolution
+output_visualizer.plot_semantic_role_performance_evolution(
+    monitoring_results=all_monitoring_results,
+    model_name="transformer_v2", 
+    save_plot=True
+)
+
+# Save metrics to CSV for further analysis
+output_visualizer.save_metrics(
+    monitoring_results=all_monitoring_results,
+    model_name="transformer_v2"
+)
