@@ -487,7 +487,7 @@ class TrainingCallbacks:
 
                 # We check one by one for the hessian visualizations
                 if self.hessian_analyzer.config.track_component_hessian: #components
-                    self.hessian_analyzer.visualizer.plot_component_comparison(
+                    self.hessian_analyzer.visualizer.plot_component_comparison( #results["components"]
                         hessian_history=self.analysis_results['hessian'], model_name=model_name,
                     )
                 if self.hessian_analyzer.config.track_gradient_alignment: #alignment

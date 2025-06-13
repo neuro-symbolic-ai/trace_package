@@ -280,6 +280,8 @@ class HessianVisualizer:
         # each step contains a dictionary with component names as keys and its values are dictionaries with metrics for each component
         steps = sorted(list(hessian_history.keys()))
         components = hessian_history[steps[0]]['components'].keys()
+        print(f"Plotting component comparison for {model_name} at steps: {steps}")
+        print(f"Component names: {components}")
 
         # components = list(component_history.keys())
         # common_steps = HessianVisualizer._find_common_steps(component_history)
@@ -325,23 +327,14 @@ class HessianVisualizer:
             model_name: str
     ) -> None:
         """Plot a specific metric comparison across components."""
-
-
         plt.figure(figsize=(14, 10))
-
         for i, component in enumerate(components):
             values = []
             for step in common_steps:
                 val = hessian_history[step]['components'].get(component, {}).get(metric, np.nan)
                 if use_log and not np.isnan(val): #if step in hessian_history[component]:
                     val = abs(val) if val != 0 else 1e-10
-                    # val = hessian_history[component][step].get(metric, np.nan)
-                    # if use_log and not np.isnan(val):
-                    #     val = abs(val) if val != 0 else 1e-10
-                    values.append(val)
-                else:
-                    values.append(np.nan)
-
+                values.append(val)
             if use_log:
                 plt.semilogy(common_steps, values, linewidth=2, label=component, color=colors[i])
             else:
@@ -354,11 +347,9 @@ class HessianVisualizer:
         plt.grid(True, alpha=0.2)
         plt.tight_layout()
 
-        # if save_path:
-        #     filename = f'{model_name}_component_{metric}.png'
-        #     plt.savefig(os.path.join(save_path, filename), dpi=300)
-
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_component_{metric}.png'), dpi=300)
+        if True:
+            plt.show()
         plt.close()
 
 

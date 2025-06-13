@@ -150,8 +150,6 @@ class IntrinsicDimensionsVisualizer:
         steps = list(intrinsic_dimensions.keys())
         IDs = []
         for step, layers in intrinsic_dimensions.items():
-            print(f"Step {step}: \n{layers} -")
-            # print(f'Number of entries: {len(layers)}')
             avg = 0
             for _, ID in layers.items():
                 avg += ID

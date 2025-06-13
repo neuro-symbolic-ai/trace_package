@@ -49,7 +49,6 @@ class HessianAnalyzer:
                 num_batches=self.config.num_batches,
                 n_top_vectors=self.config.n_components
             )
-            print(f"Eigenvalues shape: {eigenvalues.shape}, Eigenvectors shape: {eigenvectors.shape}")
             # Compute detailed metrics
             hessian_metrics = HessianMetrics.compute_detailed_hessian_metrics(eigenvalues)
             results["hessian"] = hessian_metrics
@@ -62,6 +61,8 @@ class HessianAnalyzer:
                     self.config.device
                 )
                 results["components"] = component_results
+                # print("Component-specific Hessian analysis completed.")
+                # print(f"Component results: {component_results}")
 
             # Gradient-Hessian alignment analysis
             if self.config.track_gradient_alignment:
