@@ -251,7 +251,7 @@ class ProbesVisualizer:
         print("Creating comprehensive all-tags-all-layers plot...")
 
         # Use different colors for tags and different line styles for layers
-        colors = plt.cm.tab10(np.linspace(0, 1, len(self.organized['tags'])))
+        colors = plt.cm.tab20(np.linspace(0, 1, len(self.organized['tags'])))
         line_styles = ['-', '--', '-.', ':'] * (len(self.organized['layers']) // 4 + 1)
 
         plt.figure(figsize=(16, 10))

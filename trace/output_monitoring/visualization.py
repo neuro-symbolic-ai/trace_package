@@ -29,7 +29,7 @@ class OutputMonitoringVisualizer:
         plt.style.use('seaborn-v0_8-whitegrid')
 
         # Color palette for consistency
-        self.colors = plt.cm.tab10(np.linspace(0, 1, 20))
+        self.colors = plt.cm.tab20.colors
 
         # Create output directories
         if not self.log_dir:

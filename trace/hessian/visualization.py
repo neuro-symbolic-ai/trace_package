@@ -290,7 +290,7 @@ class HessianVisualizer:
         #     print("No common steps found across components")
         #     return
 
-        colors = plt.cm.tab10(np.linspace(0, 1, len(components)))
+        colors = plt.cm.tab20(np.linspace(0, 1, len(components)))
         plt.style.use('seaborn-v0_8-whitegrid')
 
         # Plot different metrics

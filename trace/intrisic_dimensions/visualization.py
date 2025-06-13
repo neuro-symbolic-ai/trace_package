@@ -88,7 +88,7 @@ class IntrinsicDimensionsVisualizer:
             layer_types[layer_type]['indices'].append(data['layer_index'])
 
         # Plot each layer type
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+        colors = plt.cm.tab20.colors
         markers = ['o', 's', '^', 'D']
 
         for i, (layer_type, data) in enumerate(layer_types.items()):
