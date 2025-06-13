@@ -835,3 +835,17 @@ output_visualizer.save_metrics(
     monitoring_results=all_monitoring_results,
     model_name="transformer_v2"
 )
+```
+
+##  License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Citation
+
+If you use trace in your research, please cite:
+
+```bibtex
+@software{...
+}
+```
