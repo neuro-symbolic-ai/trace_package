@@ -444,3 +444,256 @@ visualizer.plot_gradient_alignment(hessian_history, "my_transformer")
 visualizer.plot_component_comparison(hessian_history, "my_transformer")
 visualizer.plot_memorization_metrics(hessian_history, model_name="my_transformer")
 ```
+
+## Linguistic Probes
+
+TRACE provides linguistic probing capabilities to analyze what linguistic knowledge models acquire during training. This module includes both probe training infrastructure and real-time monitoring systems for tracking linguistic understanding.
+
+### Key Features
+
+- **Multi-label Probing**: Train sophisticated probes to detect multiple linguistic features simultaneously
+- **POS Analysis**: Track part-of-speech understanding (basic and detailed granularity)
+- **Semantic Role Analysis**: Monitor semantic role labeling capabilities
+- **Flexible Tagging**: Rule-based taggers for synthetic and natural text
+- **Performance Tracking**: Category-specific performance monitoring
+
+### Two-Phase Workflow
+
+The linguistic probes module follows a two-phase workflow:
+
+1. **Training Phase**: Train probes on your model to establish linguistic understanding baselines
+2. **Monitoring Phase**: Use trained probes to monitor linguistic capabilities during model training
+
+### Phase 1: Training Probes
+
+First, you need to train probes on your model to establish what linguistic features it has learned:
+
+```python
+from trace.linguistic_probes import LinguisticProbesConfig, ProbeTrainer
+
+# Configure probe training
+config = LinguisticProbesConfig(
+    # Probe architecture
+    probe_type='multilabel',           # 'linear' or 'multilabel'
+    hidden_dim=128,                    # Hidden dimension for MLPs
+    
+    # Training parameters
+    epochs=3,                          # Training epochs for probes
+    lr=0.001,                         # Learning rate
+    batch_size=64,                    # Batch size for probe training
+    device="cuda",                    # Device for computation
+    
+    # What to analyze
+    track_pos=True,                   # Train POS probes
+    track_semantic=True,              # Train semantic role probes
+    pos_granularity='basic',          # 'basic' or 'detailed'
+    semantic_granularity='basic',     # 'basic' or 'detailed'
+    
+    # Layer selection (None = all layers)
+    layer_indices=None,
+    
+    # Output settings
+    save_probes=True,                 # Save trained probes
+    save_visualizations=False,         # Create training visualizations
+    save_path='./trained_probes',     # Where to save probes
+    log_dir="./analysis_results",  # Training logs directory
+)
+
+# alternatively, use LinguisticProbesConfig.minimal() for minimal settings, LinguisticProbesConfig.comprehensive() for comprehensive settings, or LinguisticProbesConfig.default() for default settings
+
+# Initialize trainer
+probe_trainer = ProbeTrainer(config, tokenizer)
+
+# Train probes on your model
+training_results = probe_trainer.train_all_probes(
+    model=decoder_model,
+    dataloader=your_training_dataloader
+)
+
+# View training results
+for layer_key, layer_results in training_results.items():
+    print(f"\nLayer {layer_key}:")
+    if 'pos' in layer_results:
+        pos_acc = layer_results['pos']['accuracy']
+        print(f"  POS accuracy: {pos_acc:.3f}")
+    if 'semantic' in layer_results:
+        sem_acc = layer_results['semantic']['accuracy']
+        print(f"  Semantic accuracy: {sem_acc:.3f}")
+```
+
+### Granularity Options
+
+Configure the level of linguistic analysis detail:
+
+```python
+# Basic granularity - simplified categories
+basic_config = LinguisticProbesConfig(
+    pos_granularity='basic',           # NOUN, VERB, ADJ, ADV, PREP, DET, CONJ, OTHER
+    semantic_granularity='basic'       # AGENT, PATIENT, ACTION, LOCATION, RELATION, CONNECTOR, RESULT, OTHER
+)
+
+# Detailed granularity - fine-grained categories  
+detailed_config = LinguisticProbesConfig(
+    pos_granularity='detailed',        # Includes TRANSITIVE_VERB, COMMUNICATION_VERB, etc.
+    semantic_granularity='detailed'    # Includes MOTION, COMMUNICATION, DESTINATION, etc.
+)
+
+# View available categories
+print("POS categories:", basic_config.get_pos_categories())
+print("Semantic categories:", basic_config.get_semantic_categories())
+```
+
+### Phase 2: Real-time Monitoring
+
+Once you have trained probes, use them to monitor linguistic understanding during training:
+
+```python
+from trace.linguistic_probes import POSAnalyzer, SemanticAnalyzer
+
+# Configure monitoring (note: different config than training)
+monitoring_config = LinguisticProbesConfig(
+    track_pos=True,
+    track_semantic=True,
+    layer_indices={'decoder': [0, 6, 11]},  # Monitor specific layers
+    log_dir="./analysis_results",
+    save_visualizations=True,
+    
+    # Specify where to load trained probes from
+    probe_load_path={
+        (0, 'decoder'): './trained_probes/pos_layer0_decoder.pt',
+        (6, 'decoder'): './trained_probes/pos_layer6_decoder.pt',
+        (11, 'decoder'): './trained_probes/pos_layer11_decoder.pt',
+    }
+)
+
+# Initialize analyzers
+pos_analyzer = POSAnalyzer(monitoring_config)
+semantic_analyzer = SemanticAnalyzer(monitoring_config)
+
+# Load pre-trained probes
+probe_paths = {
+    (0, 'decoder'): './trained_probes/pos_layer0_decoder.pt',
+    (6, 'decoder'): './trained_probes/pos_layer6_decoder.pt',
+    (11, 'decoder'): './trained_probes/pos_layer11_decoder.pt',
+}
+pos_analyzer.load_probes(probe_paths)
+
+# Monitor during training step
+def training_step_with_linguistic_monitoring(model, batch, step):
+    # Your regular training code here...
+    
+    if step % 50 == 0:  # Monitor every 50 steps
+        # Get confidence scores from pre-trained probes
+        pos_confidences = pos_analyzer.analyze(
+            model=model,
+            dataloader=DataLoader([batch]),  # Single batch
+            tokenizer=tokenizer,
+            model_name=f"step_{step}"
+        )
+        
+        # pos_confidences structure:
+        # {(layer_idx, layer_type): {'NOUN': 0.85, 'VERB': 0.72, ...}}
+        
+        for layer_key, confidences in pos_confidences.items():
+            print(f"Step {step}, Layer {layer_key}:")
+            for tag, confidence in confidences.items():
+                print(f"  {tag}: {confidence:.3f}")
+```
+
+### Linguistic Taggers
+
+TRACE includes sophisticated rule-based taggers for synthetic data:
+
+```python
+from trace.linguistic_probes import POSTagger, SemanticTagger
+
+# Initialize taggers
+pos_tagger = POSTagger(
+    granularity='detailed',
+    use_nltk_fallback=True  # Fallback to NLTK for unknown tokens
+)
+
+semantic_tagger = SemanticTagger(granularity='detailed')
+
+# Tag synthetic text
+text = "noun_entity transitive_verb_action noun_target preposition_to location_place"
+pos_tags = pos_tagger.tag_text(text)
+semantic_tags = semantic_tagger.tag_text(text)
+
+print("POS tags:", pos_tags)
+print("Semantic tags:", semantic_tags)
+
+# Output:
+# POS tags: [('noun_entity', 'NOUN'), ('transitive_verb_action', 'TRANSITIVE_VERB'), ...]
+# Semantic tags: [('noun_entity', 'AGENT'), ('transitive_verb_action', 'ACTION'), ...]
+```
+
+### Performance Tracking
+
+Track linguistic performance by category during training:
+
+```python
+from trace.linguistic_probes import POSPerformanceTracker, SemanticPerformanceTracker
+
+# Initialize trackers
+pos_tracker = POSPerformanceTracker(
+    tokenizer=tokenizer,
+    log_dir="./performance_tracking",
+    config=LinguisticProbesConfig(pos_granularity='basic')
+)
+
+semantic_tracker = SemanticPerformanceTracker(
+    tokenizer=tokenizer,
+    log_dir="./performance_tracking",
+    config=LinguisticProbesConfig(semantic_granularity='basic')
+)
+
+# Use during training
+def training_step_with_performance_tracking(model, batch, step):
+    # Forward pass
+    outputs = model(**batch)
+    logits = outputs.logits
+    
+    # Process batch for linguistic performance metrics
+    pos_metrics = pos_tracker.process_batch(batch, logits)
+    semantic_metrics = semantic_tracker.process_batch(batch, logits)
+    
+    # Update trackers
+    pos_tracker.update_epoch_metrics(pos_metrics, step)
+    semantic_tracker.update_epoch_metrics(semantic_metrics, step)
+    
+    # Print category-specific accuracies
+    if step % 100 == 0:
+        for category, accuracy in pos_metrics['pos_analysis_accuracy'].items():
+            print(f"POS {category}: {accuracy:.3f}")
+```
+
+### Probes Visualization
+
+Generate detailed analysis visualizations:
+
+```python
+from trace.linguistic_probes import ProbesVisualizer
+
+# Initialize visualizer
+visualizer = ProbesVisualizer(
+    log_dir="./analysis_results",
+    config=monitoring_config
+)
+
+# Track confidence over training
+confidence_history = {}
+for step in range(0, 1000, 50):
+    # Get confidence scores at this step
+    pos_confidences = pos_analyzer.analyze(model, eval_dataloader, tokenizer)
+    confidence_history[step] = pos_confidences
+
+# Create comprehensive plots
+visualizer.plot_probe_confidence_analysis(
+    confidence_data=confidence_history,
+    model_name="my_transformer",
+    analysis_type="pos",
+    save_plot=True,
+    show_plots=False
+)
+```
