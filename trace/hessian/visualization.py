@@ -33,7 +33,7 @@ class HessianVisualizer:
     def plot_eigenvalue_evolution(
             self,
             hessian_history: Dict[int, Dict[str, Any]],
-            model_name: str = ""
+            model_name: str = "",
     ) -> None:
         """
         Plot evolution of Hessian eigenvalues over training.
@@ -93,6 +93,8 @@ class HessianVisualizer:
         plt.tight_layout()
 
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_hessian_trace.png'), dpi=300)
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
         # Plot negative eigenvalue count
@@ -105,6 +107,8 @@ class HessianVisualizer:
         plt.tight_layout()
 
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_negative_eigenvalues.png'), dpi=300)
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
         # Create eigenvalue heatmap
@@ -138,6 +142,8 @@ class HessianVisualizer:
         plt.tight_layout()
 
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_eigenvalue_heatmap.png'), dpi=300)
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
 
@@ -176,6 +182,8 @@ class HessianVisualizer:
             plt.tight_layout()
 
             plt.savefig(os.path.join(self.plots_dir, f'{model_name}_grad_hessian_alignment.png'), dpi=300)
+            if self.config.show_plots:
+                plt.show()
             plt.close()
 
         # Plot gradient and Hg norms
@@ -220,6 +228,8 @@ class HessianVisualizer:
         fig.tight_layout()
 
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_grad_hg_norms.png'), dpi=300)
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
 
@@ -244,6 +254,8 @@ class HessianVisualizer:
         plt.tight_layout()
 
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_curvature_gradient_ratio.png'), dpi=300)
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
 
@@ -476,7 +488,8 @@ class HessianVisualizer:
     def plot_complexity_metrics(
             hessian_history: Dict[int, Dict[str, Any]],
             save_path: Optional[str] = None,
-            model_name: str = ""
+            model_name: str = "",
+            show_plots: bool = False
     ) -> None:
         """
         Plot complexity-related metrics from Hessian analysis.

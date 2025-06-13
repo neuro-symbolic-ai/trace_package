@@ -35,6 +35,7 @@ class HessianConfig:
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     loss_fn: Optional[torch.nn.Module()] = torch.nn.CrossEntropyLoss()  # Loss function for Hessian computation
+    show_plots: bool = False  # Whether to show plots during analysis
 
     def __post_init__(self):
         """Validate configuration parameters."""
@@ -61,7 +62,6 @@ class HessianConfig:
             'n_components': 10,
             'track_component_hessian': True,
             'track_gradient_alignment': True,
-            'track_sharpness': True,
             'track_train_val_landscape_divergence': True
         }
         defaults.update(kwargs)
@@ -74,7 +74,6 @@ class HessianConfig:
             'n_components': 5,
             'track_component_hessian': False,
             'track_gradient_alignment': False,
-            'track_sharpness': False,
             'track_train_val_landscape_divergence': False
         }
         defaults.update(kwargs)
@@ -87,7 +86,6 @@ class HessianConfig:
             'n_components': 20,
             'track_component_hessian': True,
             'track_gradient_alignment': True,
-            'track_sharpness': True,
             'track_train_val_landscape_divergence': True,
             'component_list': ["attention", "attention_query", "attention_key",
                                "attention_value", "ffn", "embeddings", "norm"]

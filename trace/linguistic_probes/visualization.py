@@ -348,7 +348,8 @@ class ProbesVisualizer:
             confidence_data: Dict[int, Dict[tuple, Dict[str, float]]],
             model_name: str = '',
             analysis_type: str = 'pos',
-            save_plot: bool = True
+            save_plot: bool = True,
+            show_plots: bool = False,
     ) -> None:
         """
         Plot probe confidence analysis from training data.
@@ -385,13 +386,13 @@ class ProbesVisualizer:
             f"Found {len(self.organized['steps'])} steps, {len(self.organized['layers'])} layers, {len(self.organized['tags'])} tags")
 
         # 1. Per tag plots - each tag across layers and steps
-        self._plot_per_tag_analysis_fixed(model_name, analysis_type)
+        self._plot_per_tag_analysis_fixed(model_name, analysis_type, show_plots)
 
         # 2. Per layer plots - all tags for each layer across steps
-        self._plot_per_layer_analysis_fixed(model_name, analysis_type)
+        self._plot_per_layer_analysis_fixed(model_name, analysis_type, show_plots)
 
         # 3. All tags, all layers combined plot
-        self._plot_all_tags_all_layers_fixed(model_name, analysis_type)
+        self._plot_all_tags_all_layers_fixed(model_name, analysis_type, show_plots)
 
         if save_plot and plot_dir:
             print(f"Plots saved to: {plot_dir}")

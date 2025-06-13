@@ -6,8 +6,8 @@ import os
 
 
 class LogicalFormTokenizer(PreTrainedTokenizer):
-    def __init__(self, config: TokenizerConfig, **kwargs):
-        self.config = config
+    def __init__(self, config: TokenizerConfig = None, **kwargs):
+        self.config = config if config else TokenizerConfig.default()
         self.vocab = {
             config.unk_token: 1,
             config.pad_token: 0,
@@ -29,10 +29,14 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
         if os.path.exists(config.tokenizer_save_path):
             self.load_vocab_from_file(config.tokenizer_save_path)
 
-    def load_vocab_from_file(self, vocab_file):
+        elif 'vocab_file' in kwargs:
+            self.load_vocab_from_file(kwargs['vocab_file'])
+
+
+    def load_vocab_from_file(self, vocab_file, save_if_not_exists=True):
         """Load vocabulary from a JSON file containing example sentences and semantics."""
         with open(vocab_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            data = json.load(f)['corpus']
 
         all_text = ""
         for item in data:
@@ -54,6 +58,10 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
                 index = len(self.vocab)
                 self.vocab[token] = index
                 self.ids_to_tokens[index] = token
+
+        if save_if_not_exists:
+            if not os.path.exists(self.config.tokenizer_save_path):
+                self.save_vocabulary(os.path.dirname(self.config.tokenizer_save_path), filename_prefix="tokenizer_absynth")
 
     @staticmethod
     def _decode_unicode_escapes(text):
@@ -156,7 +164,7 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
 
         vocab_file = os.path.join(
             save_directory,
-            (filename_prefix + "-" if filename_prefix else "") + "vocab.json"
+            (filename_prefix + "-" if filename_prefix else "") + "tokenizer.json"
         )
 
         with open(vocab_file, "w", encoding="utf-8") as f:
@@ -195,3 +203,15 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
             tokens = [token for token in tokens if token not in self.all_special_tokens]
 
         return self.convert_tokens_to_string(tokens)
+
+    def get_vocab_size(self):
+        """Get the size of the vocabulary."""
+        return len(self.vocab)
+
+
+def create_tokenizer_from_data(vocab_file, config: TokenizerConfig = None):
+    """Create and initialize a tokenizer from a JSON data file."""
+    if config is None:
+        config = TokenizerConfig.default()
+    tokenizer = LogicalFormTokenizer(vocab_file=vocab_file, config=config)
+    return tokenizer

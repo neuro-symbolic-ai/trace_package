@@ -198,7 +198,6 @@ class TrainingCallbacks:
                 track_component_hessian=self.config.track_component_hessian,
                 track_gradient_alignment=self.config.track_gradient_alignment,
                 component_list=self.config.component_list,
-                track_sharpness=self.config.track_sharpness,
                 track_train_val_landscape_divergence=self.config.track_train_val_landscape_divergence,
                 save_hessian_data=self.config.save_hessian_data,
                 loss_fn=self.config.hessian_loss_fn,
@@ -374,44 +373,6 @@ class TrainingCallbacks:
                 print(f"Gradient analysis failed: {e}")
 
 
-    # def _monitor_linguistic_probes(self, hidden_states: Dict[str, torch.Tensor], step: int):
-    #     """
-    #     Monitor linguistic probe predictions (from original code logic).
-    #
-    #     Args:
-    #         hidden_states: Dictionary of layer hidden states
-    #         step: Current training step
-    #     """
-    #     # TODO: Implement the probe monitoring logic from original train_model
-    #     # This should load pre-trained probes and monitor their confidence scores
-    #
-    #     # Placeholder for the monitoring logic that was in the original code:
-    #     # with torch.no_grad():
-    #     #     for name, probe in probes.items():
-    #     #         if name not in hidden_states:
-    #     #             continue
-    #     #         hidden = hidden_states[name]
-    #     #         hidden_mean = hidden.mean(dim=1)
-    #     #         preds = probe(hidden_mean)
-    #     #         avg_conf = preds.mean(dim=0).cpu().numpy()
-    #     #         for tag_idx, score in enumerate(avg_conf):
-    #     #             probe_predictions[name][tag_idx].append((step, score))
-    #
-    #     print(f"Linguistic probe monitoring at step {step} (placeholder)")
-    #     pass
-    #
-    # def _monitor_semantic_probes(self, hidden_states: Dict[str, torch.Tensor], step: int):
-    #     """
-    #     Monitor semantic probe predictions.
-    #
-    #     Args:
-    #         hidden_states: Dictionary of layer hidden states
-    #         step: Current training step
-    #     """
-    #     # TODO: Similar to linguistic probes but for semantic roles
-    #     print(f"Semantic probe monitoring at step {step} (placeholder)")
-    #     pass
-
     def _track_gradients(self, model, step: int):
         """
         Track gradient statistics and similarities.
@@ -459,7 +420,8 @@ class TrainingCallbacks:
                 self.probe_pos_linguistic_analyzer.visualizer.plot_probe_confidence_analysis(
                     confidence_data= self.analysis_results['linguistic_probes'],
                     model_name=model_name,
-                    analysis_type=self.probe_pos_linguistic_analyzer.get_analysis_type()
+                    analysis_type=self.probe_pos_linguistic_analyzer.get_analysis_type(),
+                    show_plots=self.config.show_plots,
                 )
                 # The visualizations should be generated automatically by the analyzer
             except Exception as e:
@@ -472,7 +434,8 @@ class TrainingCallbacks:
                 self.probe_semantic_analyzer.visualizer.plot_probe_confidence_analysis(
                     confidence_data=self.analysis_results['linguistic_probes'],
                     model_name=model_name,
-                    analysis_type=self.probe_semantic_analyzer.get_analysis_type()
+                    analysis_type=self.probe_semantic_analyzer.get_analysis_type(),
+                    show_plots= self.config.show_plots,
                 )
             except Exception as e:
                 print(f"Failed to generate semantic probe visualizations: {e}")
@@ -483,7 +446,7 @@ class TrainingCallbacks:
                 print("Generating intrinsic dimensions evolution plots...")
                 # Convert step-wise results to evolution format
                 self.intrinsic_analyzer.visualizer.plot_final_id(
-                        self.analysis_results['intrinsic_dimensions'], model_name
+                        self.analysis_results['intrinsic_dimensions'], model_name,
                 )
 
             except Exception as e:

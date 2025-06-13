@@ -64,6 +64,7 @@ class TrainingConfig:
 
     # Visualization options
     save_visualization: bool = True
+    show_plots: bool = True
 
     # Linguistic probes tracking
     track_linguistic_probes: bool = True

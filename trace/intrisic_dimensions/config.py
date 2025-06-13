@@ -29,6 +29,8 @@ class IntrinsicDimensionsConfig:
     save_visualizations: bool = True  # Whether to save visualizations
     log_dir: Optional[str] = None
 
+    show_plots: bool = False  # Whether to show plots during analysis
+
     def __post_init__(self):
         """Validate configuration parameters and create ID estimator."""
         if self.model_type not in ['encoder_only', 'decoder_only', 'encoder_decoder']:
@@ -62,5 +64,6 @@ class IntrinsicDimensionsConfig:
         return cls(
             model_type="decoder_only",
             layers_to_analyze=None,
-            id_method="TwoNN"
+            id_method="TwoNN",
+            show_plots=False,
         )

@@ -47,6 +47,7 @@ class LinguisticProbesConfig:
     save_path: Optional[str] = None
     log_dir: Optional[str] = None
     probe_load_path: Union[Optional[str], Dict[Tuple[int, str], str]] = None  # Path to load existing probes if needed
+    show_plots: bool = False  # Whether to show plots during training
 
 
     def __post_init__(self):
@@ -87,7 +88,6 @@ class LinguisticProbesConfig:
             semantic_granularity="detailed",
             track_pos=True,
             track_semantic=True,
-            track_performance_over_time=True,
             layer_indices=None,
             probe_all_layers=True,
             use_class_weights=False,
@@ -96,6 +96,7 @@ class LinguisticProbesConfig:
             penalized_classes=None,
             save_probes=True,
             save_visualizations=True,
+            show_plots=False,
             save_path=None,
             log_dir=None
         )

@@ -12,7 +12,7 @@ class TokenizerConfig:
     # Tokenizer type
     tokenizer_type: str = "whitespace"
     # Vocabulary size
-    vocab_size: int = 30522
+    vocab_size: int = 7000
     # Special tokens
     unk_token: str = "[UNK]",
     pad_token: str = "[PAD]",
@@ -20,7 +20,7 @@ class TokenizerConfig:
     sep_token: str = "[SEP]",
     mask_token: str = "[MASK]",
 
-    tokenizer_save_path: str = "tokenizer_config.json"
+    tokenizer_save_path: str = "./tokenizers"
 
     def __post_init__(self):
         """Validate configuration parameters."""
@@ -32,3 +32,17 @@ class TokenizerConfig:
             if not isinstance(token, str):
                 raise ValueError(f"Special token {token} must be a string")
 
+
+    @classmethod
+    def default(cls) -> 'TokenizerConfig':
+        """Create a default configuration for the tokenizer."""
+        return cls(
+            tokenizer_type="whitespace",
+            vocab_size=7000,
+            unk_token="[UNK]",
+            pad_token="[PAD]",
+            cls_token="[CLS]",
+            sep_token="[SEP]",
+            mask_token="[MASK]",
+            tokenizer_save_path="tokenizer_config.json"
+        )

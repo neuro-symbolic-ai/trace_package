@@ -32,11 +32,11 @@ class OutputMonitoringVisualizer:
         self.colors = plt.cm.tab10(np.linspace(0, 1, 20))
 
         # Create output directories
-        if not log_dir:
-            log_dir = './analysis_results'
+        if not self.log_dir:
+            self.log_dir = './analysis_results'
         # self.plots_dir = os.path.join(log_dir, 'output_monitoring')
         self.pos_performance_dir = os.path.join(self.log_dir, 'output_pos_performance')
-        self.semantic_performance_dir = os.path.join(self.log_dir, 'output_semantic_performance')
+        self.semantic_performance_dir = os.path.join(self.log_dir, 'output_semantic_roles_performance')
         # os.makedirs(self.plots_dir, exist_ok=True)
         os.makedirs(self.pos_performance_dir, exist_ok=True)
         os.makedirs(self.semantic_performance_dir, exist_ok=True)
@@ -102,7 +102,8 @@ class OutputMonitoringVisualizer:
                 os.path.join(self.pos_performance_dir , f'{model_name}_pos_accuracy_evolution.png'),
                 dpi=300, bbox_inches='tight'
             )
-        plt.show()
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
     def plot_semantic_role_performance_evolution(
@@ -166,7 +167,8 @@ class OutputMonitoringVisualizer:
                 os.path.join(self.semantic_performance_dir, f'{model_name}_semantic_accuracy_evolution.png'),
                 dpi=300, bbox_inches='tight'
             )
-        plt.show()
+        if self.config.show_plots:
+            plt.show()
         plt.close()
 
 

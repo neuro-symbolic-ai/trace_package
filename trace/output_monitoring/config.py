@@ -29,6 +29,7 @@ class OutputMonitoringConfig:
     log_dir: Optional[str] = None
 
     device: str = "cpu"  # Device to run monitoring on (e.g., 'cuda' or 'cpu')
+    show_plots: bool = False
 
 
     def __post_init__(self):
