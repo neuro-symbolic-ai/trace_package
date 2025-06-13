@@ -348,7 +348,7 @@ class HessianVisualizer:
         plt.tight_layout()
 
         plt.savefig(os.path.join(self.plots_dir, f'{model_name}_component_{metric}.png'), dpi=300)
-        if True:
+        if self.config.show_plots:
             plt.show()
         plt.close()
 
