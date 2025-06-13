@@ -286,3 +286,161 @@ visualizer.plot_final_id(intrinsic_dims, "my_model", save_plot=True)
 # Save metrics to CSV
 visualizer.save_metrics(intrinsic_dims, "my_model")
 ```
+
+## Hessian Analysis
+
+TRACE provides comprehensive Hessian analysis capabilities for understanding loss landscape properties, training dynamics, and memorization patterns. This module analyzes curvature information to reveal insights about model optimization and generalization.
+
+### Key Features
+
+- **Eigenvalue Analysis**: Track extreme eigenvalues, trace estimates, and spectral properties
+- **Component-Specific Analysis**: Analyze individual model components (attention, FFN, embeddings)
+- **Gradient-Hessian Alignment**: Monitor optimization direction relative to curvature
+- **Memorization Detection**: Compare train/validation landscapes to detect overfitting
+- 
+### Basic Configuration
+
+```python
+from trace.hessian import HessianConfig, HessianAnalyzer
+
+# Create configuration for Hessian analysis
+config = HessianConfig(
+    n_components=10,                           # Number of eigenvalues to compute
+    num_batches=100,                          # Batches for Hessian estimation
+    device="cuda",                            # Device for computation
+    
+    # Analysis toggles
+    track_component_hessian=True,             # Analyze individual components
+    track_gradient_alignment=True,            # Monitor gradient-Hessian alignment
+    track_train_val_landscape_divergence=True, # Detect memorization signals
+    
+    # Component selection
+    component_list=["attention", "ffn", "hidden_states"],
+    
+    # Output settings
+    log_dir="./analysis_results",             # Output directory
+    save_hessian_data=True,                   # Save raw data
+    show_plots=False                          # Display plots immediately
+)
+
+# Initialize analyzer
+analyzer = HessianAnalyzer(config) # alternatively, use HessianAnalyzer.default() for default settings, HessianAnalyzer.minimal() for minimal settings, or HessianAnalyzer.comprehensive() for comprehensive settings
+```
+
+### Single-Step Analysis
+
+```python
+import torch.nn as nn
+
+# Prepare loss function and data
+loss_fn = nn.CrossEntropyLoss()
+# train_batch and val_batch should be prepared with your data
+
+# Perform comprehensive analysis at a single training step
+results = analyzer.analyze_step(
+    model=decoder_model,
+    loss_fn=loss_fn,
+    train_batch=train_batch,
+    val_batch=val_batch,              # Optional for memorization analysis
+    model_type="decoder_only",
+    step=100
+)
+
+# Access results
+print(f"Max eigenvalue: {results['hessian']['max_eigenvalue']:.2e}")
+print(f"Min eigenvalue: {results['hessian']['min_eigenvalue']:.2e}")
+print(f"Trace estimate: {results['hessian']['hessian_trace_estimate']:.2e}")
+print(f"Negative eigenvalues: {results['hessian']['negative_count']}")
+print(f"Effective rank: {results['hessian']['effective_rank_95']}")
+```
+
+### Component-Specific Analysis
+
+```python
+from trace.hessian import ComponentAnalyzer, ComponentSelector
+
+# Initialize component analyzer
+component_analyzer = ComponentAnalyzer()
+
+# Analyze all components
+component_results = component_analyzer.analyze_all_components(
+    model=decoder_model,
+    loss_fn=loss_fn,
+    data_batch=train_batch,
+    model_type="decoder_only",
+    component_list=None,  # None = analyze all components
+    n_components=10
+)
+```
+
+### Gradient-Hessian Alignment Analysis
+
+```python
+# Analyze optimization dynamics through gradient-curvature relationships
+alignment_results = analyzer.compute_gradient_alignment(
+    model=decoder_model,
+    loss_fn=loss_fn,
+    data_batch=train_batch,
+    model_type="decoder_only",
+    eigenvalues=eigenvalues,  # From previous Hessian computation
+    eigenvectors=eigenvectors
+)
+
+# Key alignment metrics
+print(f"Gradient-Hessian alignment: {alignment_results['grad_Hg_alignment']:.4f}")
+print(f"Weighted alignment score: {alignment_results['weighted_alignment']:.4f}")
+print(f"Curvature/gradient ratio: {alignment_results['grad_Hg_ratio']:.4f}")
+```
+
+### Memorization Detection
+
+```python
+# Detect memorization through train/validation landscape comparison
+memorization_signals = analyzer.compute_train_val_divergence(
+    model=decoder_model,
+    loss_fn=loss_fn,
+    train_batch=train_batch,
+    val_batch=val_batch,
+    model_type="decoder_only"
+)
+
+# Memorization indicators
+print(f"Landscape divergence score: {memorization_signals['train_val_landscape_divergence_score']:.4f}")
+print(f"Trace ratio (train/val): {memorization_signals['trace_ratio']:.4f}")
+print(f"Eigenvalue distribution overlap: {memorization_signals['eigenvalue_distribution_overlap']:.4f}")
+print(f"Effective rank difference: {memorization_signals['effective_rank_diff']}")
+```
+
+### Hessian Visualization
+
+```python
+from trace.hessian import HessianVisualizer
+
+# Initialize visualizer
+visualizer = HessianVisualizer(config)
+
+# Track analysis over multiple steps
+hessian_history = {}
+for step in range(0, 1000, 100):
+    # Perform analysis at each step
+    results = analyzer.analyze_step(
+        model=decoder_model,
+        loss_fn=loss_fn,
+        train_batch=train_batch,
+        val_batch=val_batch,
+        step=step
+    )
+    hessian_history[step] = results
+
+# Generate comprehensive visualization report
+visualizer.create_comprehensive_report(
+    hessian_history=hessian_history,
+    model_name="my_transformer"
+)
+
+# Individual plot types
+visualizer.plot_eigenvalue_evolution(hessian_history, "my_transformer")
+visualizer.plot_gradient_alignment(hessian_history, "my_transformer") 
+visualizer.plot_component_comparison(hessian_history, "my_transformer")
+visualizer.plot_memorization_metrics(hessian_history, model_name="my_transformer")
+```
