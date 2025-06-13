@@ -16,6 +16,7 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
             config.mask_token: 4
         }
         self.ids_to_tokens = {v: k for k, v in self.vocab.items()}
+        self.max_vocab_size = config.max_vocab_size
 
         super().__init__(
             unk_token=config.unk_token,
@@ -55,6 +56,10 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
         tokens = self._tokenize(all_text)
         for token in tokens:
             if token not in self.vocab:
+                if self.max_vocab_size:
+                    if len(self.vocab) >= self.max_vocab_size:
+                        # If max vocab size reached, skip adding new tokens
+                        break
                 index = len(self.vocab)
                 self.vocab[token] = index
                 self.ids_to_tokens[index] = token
@@ -143,11 +148,11 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
     def get_vocab(self):
         return dict(self.vocab)
 
-    def save_vocabulary(self, save_directory, filename_prefix=None):
+    def save_vocabulary(self, save_directory='./tokenizers', filename_prefix=None):
 
         vocab_file = os.path.join(
             save_directory,
-            (filename_prefix + "-" if filename_prefix else "") + "vocab.json"
+            (filename_prefix + "_" if filename_prefix else "") + "vocab.json"
         )
 
         with open(vocab_file, "w", encoding="utf-8") as f:

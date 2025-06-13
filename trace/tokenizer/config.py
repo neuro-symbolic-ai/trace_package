@@ -12,7 +12,7 @@ class TokenizerConfig:
     # Tokenizer type
     tokenizer_type: str = "whitespace"
     # Vocabulary size
-    vocab_size: int = 7000
+    max_vocab_size: int = None
     # Special tokens
     unk_token: str = "[UNK]",
     pad_token: str = "[PAD]",
@@ -24,7 +24,7 @@ class TokenizerConfig:
 
     def __post_init__(self):
         """Validate configuration parameters."""
-        if not isinstance(self.vocab_size, int) or self.vocab_size <= 0:
+        if not isinstance(self.max_vocab_size, int) or self.max_vocab_size <= 0:
             raise ValueError("vocab_size must be a positive integer")
 
         # Ensure special tokens are strings
@@ -38,7 +38,7 @@ class TokenizerConfig:
         """Create a default configuration for the tokenizer."""
         return cls(
             tokenizer_type="whitespace",
-            vocab_size=7000,
+            max_vocab_size=None,
             unk_token="[UNK]",
             pad_token="[PAD]",
             cls_token="[CLS]",
