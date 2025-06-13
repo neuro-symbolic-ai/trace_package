@@ -282,7 +282,8 @@ def get_dataloader(corpus_path, tokenizer, batch_size: int = 32, max_length: int
         corpus_path = './data'
         os.makedirs(os.path.dirname(corpus_path), exist_ok=True)
         # Save the corpus to a JSON file
-        corpus_path = os.path.abspath(corpus_path)
+        file_name = f"synthetic_corpus_{num_sentences}.json"
+        corpus_path = os.path.join(corpus_path, file_name)
         corpus.save(corpus_path, format="sentences_only", indent=2)
 
     dataset = TextDataset(corpus_path, tokenizer, max_length=max_length, model_type=model_type)
