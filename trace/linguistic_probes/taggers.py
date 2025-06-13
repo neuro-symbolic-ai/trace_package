@@ -9,19 +9,33 @@ try:
     import nltk
     from nltk import pos_tag
 
-    # Download NLTK resources if needed, we use them as a fallback for unknown tokens
-    try:
-        nltk.data.find('tokenizers/punkt')
-    except LookupError:
-        nltk.download('punkt')
-    try:
-        nltk.data.find('taggers/averaged_perceptron_tagger')
-    except LookupError:
-        nltk.download('averaged_perceptron_tagger')
-    NLTK_AVAILABLE = True
+    # List of required NLTK resources and their paths
+    resources = {
+        'punkt': 'tokenizers/punkt',
+        'averaged_perceptron_tagger': 'taggers/averaged_perceptron_tagger'
+    }
+
+    def ensure_nltk_resources(resources):
+        all_ok = True
+        for name, path in resources.items():
+            try:
+                nltk.data.find(path)
+            except LookupError:
+                print(f"Downloading missing NLTK resource: {name}")
+                try:
+                    nltk.download(name, quiet=True)
+                    nltk.data.find(path)  # Re-check after download
+                except Exception as e:
+                    print(f"Failed to download {name}: {e}")
+                    all_ok = False
+        return all_ok
+
+    NLTK_AVAILABLE = ensure_nltk_resources(resources)
+
 except ImportError:
+    print("Warning: NLTK not installed.")
     NLTK_AVAILABLE = False
-    print("Warning: NLTK not available. Using rule-based tagging only.")
+
 
 
 class BaseTagger(ABC):

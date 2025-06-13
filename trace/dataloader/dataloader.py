@@ -255,8 +255,14 @@ class TextDataset(Dataset):
         return padded[:max_length]  # Just in case the sequence was longer
 
 
-def get_dataloader(corpus_path, tokenizer, batch_size: int = 32, max_length: int = 128,
-                    model_type: str = "encoder-decoder", val_split: float = 0.1, num_sentences: int = 50000)-> tuple:
+def get_dataloader(corpus_path,
+                   tokenizer,
+                   batch_size: int = 32,
+                   max_length: int = 128,
+                   model_type: str = "encoder-decoder",
+                   val_split: float = 0.1,
+                   test_split: float = 0.1,
+                   num_sentences: int = 50000)-> tuple:
     """
     Create DataLoaders for training and validation.
 
@@ -275,10 +281,9 @@ def get_dataloader(corpus_path, tokenizer, batch_size: int = 32, max_length: int
         # create dataset from absynth corpus
         if num_sentences <= 0:
             raise ValueError("num_sentences must be a positive integer")
-            num_sentences = 50000
 
         generator = SyntheticCorpusGenerator()
-        corpus = generator(10000)
+        corpus = generator(num_sentences)
         corpus_path = './data'
         os.makedirs(os.path.dirname(corpus_path), exist_ok=True)
         # Save the corpus to a JSON file
@@ -289,11 +294,21 @@ def get_dataloader(corpus_path, tokenizer, batch_size: int = 32, max_length: int
     dataset = TextDataset(corpus_path, tokenizer, max_length=max_length, model_type=model_type)
 
     # Split into train and validation sets
-    val_size = int(len(dataset) * val_split)
-    train_size = len(dataset) - val_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    total_size = len(dataset)
+    test_size = int(total_size * test_split)
+    val_size = int(total_size * val_split)
+    train_size = total_size - val_size - test_size
+    train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) if train_size > 0 else None
+    val_loader = DataLoader(val_dataset, batch_size=batch_size) if val_size > 0 else None
+    test_loader = DataLoader(test_dataset, batch_size=batch_size) if test_size > 0 else None
 
-    return train_loader, val_loader
+    # val_size = int(len(dataset) * val_split)
+    # train_size = len(dataset) - val_size
+    # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    #
+    # train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    # val_loader = DataLoader(val_dataset, batch_size=batch_size)
+
+    return train_loader, val_loader, test_loader

@@ -56,7 +56,7 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
         tokens = self._tokenize(all_text)
         for token in tokens:
             if token not in self.vocab:
-                if self.max_vocab_size:
+                if self.max_vocab_size>0:
                     if len(self.vocab) >= self.max_vocab_size:
                         # If max vocab size reached, skip adding new tokens
                         break
