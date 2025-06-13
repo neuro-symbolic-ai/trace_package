@@ -38,6 +38,7 @@ except ImportError:
 
 
 
+
 class BaseTagger(ABC):
     """
     An interface class for all taggers.

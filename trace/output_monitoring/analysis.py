@@ -70,7 +70,6 @@ class OutputMonitoringAnalyzer:
             pos_tagger=self.pos_tagger,
             semantic_tagger=self.semantic_tagger
         )
-        print(f"Monitoring data at step {step}: {monitoring_data}")
 
         results = {'step': step}
 

@@ -184,7 +184,6 @@ class ComponentAnalyzer:
         component_results = {}
 
         for component in valid_components:
-            print(f"Analyzing component: {component}")
             result = self.analyze_component(
                 model, loss_fn, data_batch, component,
                 model_type, n_components, device
