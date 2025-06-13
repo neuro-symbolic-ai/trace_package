@@ -41,5 +41,5 @@ class TokenizerConfig:
             cls_token="[CLS]",
             sep_token="[SEP]",
             mask_token="[MASK]",
-            tokenizer_save_path="tokenizer_config.json"
+            tokenizer_save_path="./tokenizers/tokenizer_config.json"
         )
