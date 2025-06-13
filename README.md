@@ -4,6 +4,8 @@
 
 **TRACE** is a comprehensive Python package for analyzing transformer models during training. It provides modular tools for understanding model behavior through linguistic probes, intrinsic dimension analysis, Hessian landscape exploration, and more.
 
+**Note**: TRACE is designed to work with synthetic data from the [ABSynth dataset](https://github.com/nura-j/ABSynth_dataset), which provides controlled linguistic structures for systematic analysis of transformer learning dynamics.
+
 ## Features
 
 - **Linguistic Probes**: Monitor syntactic and semantic presence across layers
