@@ -16,7 +16,7 @@ dependencies:
   - ipykernel
   - numba
   - pip:
-      - absynth==0.1.1
+      - git+https://github.com/nura-j/absynth.git
       - trace==0.1
       - transformers
       - torch

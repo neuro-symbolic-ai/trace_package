@@ -848,6 +848,85 @@ output_visualizer.save_metrics(
 )
 ```
 
+## Working with ABSynth Data
+
+### Understanding ABSynth Structure
+
+ABSynth generates synthetic corpora with controlled linguistic properties. Each sentence includes:
+
+- **Semantic Frame Annotations**: Agent, Patient, Theme, Location roles
+- **Linguistic Features**: POS tags, dependency parsing, constituency trees
+- **Statistical Properties**: Zipfian word frequencies, entropy profiles
+- **Complexity Levels**: Simple, medium, and complex sentence structures
+
+### Loading ABSynth Corpora
+
+```python
+from trace.tokenizer import create_tokenizer_from_data
+
+# Load ABSynth corpus
+corpus_path = "path/to/absynth_corpus.json"
+tokenizer = create_tokenizer_from_data(vocab_file=corpus_path)
+
+# The tokenizer automatically handles ABSynth's synthetic vocabulary
+# and maintains consistency with the corpus's linguistic annotations
+```
+
+## Creating Your Own ABSynth Dataset
+
+If you don't have an ABSynth corpus file, you can quickly generate one using the [ABSynth library](https://github.com/nura-j/ABSynth_dataset):
+
+### Minimal Example
+
+```bash
+# Install ABSynth
+pip install git+https://github.com/nura-j/absynth.git
+```
+
+```python
+from absynth.corpus import SyntheticCorpusGenerator
+
+# Generate a basic corpus (3-line minimal example)
+generator = SyntheticCorpusGenerator()
+corpus = generator.generate_corpus(num_sentences=1000)
+corpus.save("my_absynth_corpus.json")
+
+# Now use with TRACE
+CORPUS_PATH = "my_absynth_corpus.json"  # Use in your TRACE pipeline
+```
+
+### Custom Configuration (Optional)
+
+For more control over your synthetic data:
+
+```python
+from absynth.corpus import SyntheticCorpusGenerator
+
+# Generate corpus with specific properties
+generator = SyntheticCorpusGenerator()
+corpus = generator.generate_corpus(
+    num_sentences=10000,
+    complexity_distribution={
+        "simple": 0.55,       # 55% simple sentences
+        "medium": 0.35,       # 35% medium complexity  
+        "complex": 0.1        # 10% complex sentences
+    },
+    semantic_frame_distribution={
+        "transitive_action": 0.4,     # Subject-verb-object patterns
+        "intransitive_action": 0.25,  # Subject-verb patterns
+        "communication": 0.2,         # Communication verbs
+        "motion": 0.15               # Movement and location
+    }
+)
+
+# Save in format compatible with TRACE
+corpus.save("./data/custom_absynth_corpus.json", indent=2)
+```
+
+This generates synthetic corpora optimized for transformer analysis with controlled linguistic properties, semantic annotations, and statistical characteristics ideal for TRACE's analysis modules.
+
+
+
 ##  License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
