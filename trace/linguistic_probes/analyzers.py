@@ -1,8 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
 from typing import Dict, List, Optional, Any, Union
-from tqdm import tqdm
-
 from .config import LinguisticProbesConfig
 from .models import MultiLabelProbe, LinearProbe
 from .utils import extract_hidden_representations_with_pos_semantic, prepare_probing_dataset
@@ -23,6 +21,7 @@ class BaseAnalyzer:
 
         # Store loaded probes for each layer
         self.loaded_probes = {}
+        self.use_random_probes = False
 
         self.visualizer = ProbesVisualizer(
             self.config.log_dir, self.config
@@ -36,7 +35,7 @@ class BaseAnalyzer:
         """Get label names for this analysis type (to be overridden by subclasses)."""
         raise NotImplementedError
 
-    def load_probes(self, probe_paths: Dict[Union[int, tuple], str]) -> None:
+    def load_probes(self, probe_paths: Dict[Union[int, tuple], str] = None) -> None:
         """
         Load pre-trained probes for specified layers.
 
@@ -44,6 +43,11 @@ class BaseAnalyzer:
             probe_paths: Dictionary mapping layer keys to probe file paths
         """
         print(f"Loading {self.get_analysis_type()} probes...")
+        if probe_paths is None:
+            self.use_random_probes = True
+            print("No probe paths provided, using random probes.")
+            self.loaded_probes = {}
+            return
 
         for layer_key, probe_path in probe_paths.items():
             try:
@@ -60,6 +64,39 @@ class BaseAnalyzer:
 
             except Exception as e:
                 print(f"Failed to register probe for layer {layer_key}: {e}")
+        self.use_random_probes = False
+
+    def _create_random_probe(self, layer_key: Union[int, tuple], input_dim: int) -> torch.nn.Module:
+        """
+        Create a random probe for a layer when no pre-trained probe is available.
+
+        Args:
+            layer_key: Layer identifier
+            input_dim: Hidden state dimension
+
+        Returns:
+            Randomly initialized probe model
+        """
+        print(f"Creating random probe for layer {layer_key} with input dim {input_dim}")
+        if layer_key in self.loaded_probes and self.loaded_probes[layer_key]['probe'] is not None:
+            return self.loaded_probes[layer_key]['probe']
+        try:
+            if self.config.probe_type == "multilabel":
+                probe = MultiLabelProbe(input_dim=input_dim, config=self.config)
+            else:
+                probe = LinearProbe(input_dim=input_dim, config=self.config)
+
+            # Move to device and set to evaluation mode
+            probe.to(self.device)
+            probe.eval()
+            self.loaded_probes[layer_key] = {'probe': probe, 'path': None, 'random': True}
+
+            print(f"Created random {self.get_analysis_type()} probe for layer {layer_key}")
+
+            return probe
+        except Exception as e:
+            print(f"Failed to create random probe for layer {layer_key}: {e}")
+            return None
 
     def _load_probe_for_layer(self, layer_key: Union[int, tuple], input_dim: int) -> Optional[torch.nn.Module]:
         """
@@ -72,6 +109,10 @@ class BaseAnalyzer:
         Returns:
             Loaded probe model
         """
+        # If using random probes, return rand probe
+        if self.use_random_probes:
+            return self._create_random_probe(layer_key, input_dim)
+
         if layer_key not in self.loaded_probes:
             print(f"No probe registered for layer {layer_key}")
             return None

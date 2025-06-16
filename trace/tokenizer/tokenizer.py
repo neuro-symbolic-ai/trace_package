@@ -218,5 +218,6 @@ def create_tokenizer_from_data(vocab_file, config: TokenizerConfig = None):
     """Create and initialize a tokenizer from a JSON data file."""
     if config is None:
         config = TokenizerConfig.default()
+        config.tokenizer_save_path = vocab_file
     tokenizer = LogicalFormTokenizer(vocab_file=vocab_file, config=config)
     return tokenizer

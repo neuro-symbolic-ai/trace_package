@@ -53,7 +53,7 @@ model_config = TransformerConfig(
     d_ff=2048,                        # Feed-forward dimension
     max_seq_length=128,               # Maximum sequence length
     dropout=0.1,
-    device="cuda"                     # "cpu" or "cuda"
+    device="cpu"                     # "cpu" or "cuda"
 )
 
 model = Transformer.from_config(model_config)
@@ -73,13 +73,24 @@ train_loader, val_loader, test_loader = get_dataloader(
 
 # Configure comprehensive training analysis
 from trace.training import Trainer, TrainingConfig
+# Optional: Load pre-trained probes for analysis.
+# If not provided, probes are randomly initialized and trained during analysis.
+probe_paths = {
+    (0, 'decoder'): './probes/pos_layer0_decoder.pt',
+    (1, 'decoder'): './probes/pos_layer1_decoder.pt',
+}
+
+semantic_probe_paths = {
+    (0, 'decoder'): './probes/semantic_layer0_decoder.pt',
+    (1, 'decoder'): './probes/semantic_layer1_decoder.pt',
+}
 
 training_config = TrainingConfig(
     # Training parameters
-    epochs=10,
+    epochs=3,
     learning_rate=1e-4,
     batch_size=32,
-    device="cuda",
+    device="cpu",
     
     # Analysis modules (enable all)
     track_hessian=True,               # Loss landscape analysis
@@ -88,13 +99,11 @@ training_config = TrainingConfig(
     track_intrinsic_dimensions=True,  # Representation dimensionality
     track_pos_performance=True,       # Output POS accuracy
     track_semantic_roles_performance=True,  # Output semantic accuracy
-    probe_load_paths={(0, 'decoder'):'/path/probes/pos_layer0_decoder.pt', 
-                      (1, 'decoder'):'/path/probes/pos_layer0_decoder.pt'},
-    semantic_probe_load_path={(0, 'decoder'):'/path/probes/semantic_layer0_decoder.pt', 
-                      (1, 'decoder'):'/path/probes/semantic_layer1_decoder.pt'},
+    probe_load_paths=probe_paths,
+    semantic_probe_load_path=semantic_probe_paths,
     
     # Analysis frequency and visualization
-    track_interval=100,               # Analyze every 100 steps
+    track_interval=500,               # Analyze every 100 steps
     save_visualization=True,          # Generate plots
     plots_path="./analysis_results"   # Save results here
 )
@@ -104,7 +113,8 @@ trainer = Trainer(training_config, tokenizer, model)
 best_loss, analysis_results = trainer.train(
     train_loader=train_loader,
     val_loader=val_loader,
-    test_loader=test_loader
+    test_loader=test_loader, 
+    # model=model
 )
 
 # Results automatically saved to ./analysis_results/ with:

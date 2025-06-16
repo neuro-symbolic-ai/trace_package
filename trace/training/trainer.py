@@ -104,7 +104,7 @@ class Trainer:
             train_loader,
             val_loader,
             test_loader: Optional = None,
-            model=None
+            # model=None
     ) -> Tuple[float, Dict[str, Any]]:
         """
         Train the model with comprehensive analysis.
@@ -119,12 +119,13 @@ class Trainer:
             Tuple of (best_validation_loss, analysis_results)
         """
         # Set model if provided
-        if model is not None:
-            self.model = model
-        else:
-            raise ValueError("No model provided for training")
+        # if model is not None:
+        #     self.model = model
+        # else:
+        #     raise ValueError("No model provided for training")
 
         # Move model to device
+        print("Moving model to device:", self.device)
         self.model.to(self.device)
 
         # Set up training components

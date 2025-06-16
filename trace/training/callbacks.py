@@ -146,8 +146,9 @@ class TrainingCallbacks:
                 print(f"Loaded POS probes from: {self.config.probe_load_paths}")
             else:
                 print("Warning: No probe paths provided - analysis will skip layers without probes")
-                self.track_linguistic_probe = False  # Disable semantic tracking if no probes are loaded
-                self.probe_pos_linguistic_analyzer = None  # Set to None if no probes are loaded
+                self.probe_pos_linguistic_analyzer.load_probes(self.config.probe_load_paths)
+                # self.track_linguistic_probe = False  # Disable semantic tracking if no probes are loaded
+                # self.probe_pos_linguistic_analyzer = None  # Set to None if no probes are loaded
         else:
             self.probe_pos_linguistic_analyzer = None
 
@@ -172,8 +173,9 @@ class TrainingCallbacks:
                 print(f"Loaded semantic probes from: {self.config.semantic_probe_load_path}")
             else:
                 print("Warning: No semantic probe paths provided - analysis will skip layers without probes")
-                self.track_semantic_probes = False  # Disable semantic tracking if no probes are loaded
-                self.probe_semantic_analyzer = None  # Set to None if no probes are loaded
+                # self.track_semantic_probes = False  # Disable semantic tracking if no probes are loaded
+                self.probe_semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
+                # self.probe_semantic_analyzer = None  # Set to None if no probes are loaded
         else:
             self.probe_semantic_analyzer = None
 
