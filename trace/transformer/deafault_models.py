@@ -1,4 +1,3 @@
-from typing import Optional
 from .models import Transformer
 from .config import TransformerConfig
 
