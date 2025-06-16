@@ -1,4 +1,3 @@
-import torch
 from typing import List, Dict, Any, Optional
 from .utils import extract_component_parameters, get_hessian_eigenvectors
 from .metrics import HessianMetrics

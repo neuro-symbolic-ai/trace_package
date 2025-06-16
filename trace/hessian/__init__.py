@@ -8,12 +8,6 @@ from .utils import (
     extract_component_parameters,
     get_hessian_eigenvectors
 )
-
-# from .visualization import (
-#     plot_hessian_evolution,
-#     plot_component_comparison,
-#     plot_train_val_landscape_divergence_metrics
-# )
 from .components import (compute_component_hessians)
 
 __all__ = [

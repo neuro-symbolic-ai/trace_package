@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from typing import Dict, Any, Optional
 from torch.autograd import grad
-
 from .config import HessianConfig
 from .utils import compute_loss, get_hessian_eigenvectors
 from .metrics import HessianMetrics
