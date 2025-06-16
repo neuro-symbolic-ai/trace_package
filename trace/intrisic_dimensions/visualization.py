@@ -1,11 +1,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 from typing import Dict, List, Optional, Union, Tuple, Any
-from collections import defaultdict
-
 from .config import IntrinsicDimensionsConfig
 
 

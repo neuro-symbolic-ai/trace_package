@@ -1,9 +1,7 @@
 from typing import Optional, Union, List, Dict, Tuple
-
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-
 from trace.intrisic_dimensions.config import IntrinsicDimensionsConfig
 
 
