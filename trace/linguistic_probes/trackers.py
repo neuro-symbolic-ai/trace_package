@@ -1,7 +1,6 @@
 import torch
-import numpy as np
 from collections import defaultdict
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, Optional, Any
 
 from .taggers import POSTagger, SemanticTagger
 from .config import LinguisticProbesConfig

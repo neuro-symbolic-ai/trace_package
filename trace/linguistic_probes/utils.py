@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
-from typing import Dict, List, Any, Optional, Callable, Union
+from typing import Dict, List, Optional, Union
 from collections import Counter
 
 from .taggers import POSTagger, SemanticTagger

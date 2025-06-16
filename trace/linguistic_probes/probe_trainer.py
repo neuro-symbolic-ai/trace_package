@@ -3,7 +3,6 @@ import os
 import json
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Dict, List, Any, Optional, Union
-from tqdm import tqdm
 
 from trace.linguistic_probes import LinguisticProbesConfig
 from trace.linguistic_probes.models import MultiLabelProbe, LinearProbe

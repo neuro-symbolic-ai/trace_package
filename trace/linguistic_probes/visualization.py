@@ -3,9 +3,7 @@ import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-from typing import Dict, List, Any, Optional, Union
-from collections import defaultdict
+from typing import Dict, List, Optional
 
 from matplotlib.lines import Line2D
 
@@ -116,7 +114,6 @@ class ProbesVisualizer:
         Returns:
             Dictionary with organized data structure for plotting
         """
-        # Initialize organized structure with proper defaultdict nesting
         self.organized = {
             'steps': [],
             'layers': set(),
@@ -300,9 +297,6 @@ class ProbesVisualizer:
         plt.ylabel('Confidence Score', fontsize=12)
         plt.grid(True, alpha=0.3)
         plt.ylim(0, 1)
-
-        # Create custom legends
-        from matplotlib.lines import Line2D
 
         # Tag legend (colors)
         tag_legend_elements = [Line2D([0], [0], color=color, lw=3, label=tag)
