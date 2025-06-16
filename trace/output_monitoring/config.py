@@ -1,5 +1,3 @@
-# output_monitoring/config.py
-
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Union
 

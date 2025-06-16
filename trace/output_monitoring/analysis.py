@@ -1,8 +1,5 @@
 from typing import Optional, List, Dict, Any
-from dataclasses import dataclass
-
 import torch
-
 from .config import OutputMonitoringConfig
 from .utils import extract_output_monitoring_data
 from .visualization import OutputMonitoringVisualizer
