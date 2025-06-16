@@ -38,7 +38,7 @@ class TrainingConfig:
     # Logging and saving
     log_steps: int = 100
     log_only_at_epoch_end: bool = False
-    save_path: str = "../models/model.pt"
+    save_path: str = "./models/model.pt"
     plots_path: Optional[str] = "../analysis_results"
 
     # Analysis tracking intervals

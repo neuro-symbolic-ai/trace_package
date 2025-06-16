@@ -256,7 +256,7 @@ def save_checkpoint(
             'weight_decay': weight_decay
         }
     }
-
+    print(f"Saving checkpoint to {save_path} at epoch {epoch} with best validation loss {best_val_loss:.4f}")
     torch.save(checkpoint, save_path)
 
 

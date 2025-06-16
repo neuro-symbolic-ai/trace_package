@@ -93,14 +93,14 @@ training_config = TrainingConfig(
     device="cpu",
     
     # Analysis modules (enable all)
-    track_hessian=True,               # Loss landscape analysis
-    track_linguistic_probes=True,     # POS understanding  
-    track_semantic_probes=True,       # Semantic role understanding
-    track_intrinsic_dimensions=True,  # Representation dimensionality
-    track_pos_performance=True,       # Output POS accuracy
-    track_semantic_roles_performance=True,  # Output semantic accuracy
-    probe_load_paths=probe_paths,
-    semantic_probe_load_path=semantic_probe_paths,
+    track_hessian=False,               # Loss landscape analysis
+    track_linguistic_probes=False,     # POS understanding  
+    track_semantic_probes=False,       # Semantic role understanding
+    track_intrinsic_dimensions=False,  # Representation dimensionality
+    track_pos_performance=False,       # Output POS accuracy
+    track_semantic_roles_performance=False,  # Output semantic accuracy
+    # probe_load_paths=probe_paths,
+    # semantic_probe_load_path=semantic_probe_paths,
     
     # Analysis frequency and visualization
     track_interval=500,               # Analyze every 100 steps
@@ -114,7 +114,6 @@ best_loss, analysis_results = trainer.train(
     train_loader=train_loader,
     val_loader=val_loader,
     test_loader=test_loader, 
-    # model=model
 )
 
 # Results automatically saved to ./analysis_results/ with:

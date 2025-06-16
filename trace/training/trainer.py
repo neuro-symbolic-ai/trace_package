@@ -125,7 +125,6 @@ class Trainer:
         #     raise ValueError("No model provided for training")
 
         # Move model to device
-        print("Moving model to device:", self.device)
         self.model.to(self.device)
 
         # Set up training components
@@ -346,6 +345,7 @@ class Trainer:
         Args:
             epoch: Current epoch
         """
+        print(f"Saving checkpoint for epoch {epoch + 1}...")
         save_checkpoint(
             self.model,
             self.config.save_path,
