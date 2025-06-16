@@ -9,7 +9,7 @@ from .components import (
     Encoder,
     Decoder
 )
-from .deafault_models import TransformerDefault
+from .default_models import TransformerDefault
 from .utils import attach_hooks, remove_hooks, expand_mask
 
 __all__ = [
