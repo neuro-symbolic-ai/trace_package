@@ -37,23 +37,24 @@ pip install .
 # Create tokenizer from your corpus
 from trace.tokenizer import create_tokenizer_from_data
 
-CORPUS_PATH = "./data/corpus.json"  # Your ABSynth data - sample data path
-tokenizer = create_tokenizer_from_data(vocab_file=CORPUS_PATH)  #alternatively, use from_pretrained(vocab_file=VOCAB_file) to load from a pre-existing tokenizer file
+CORPUS_PATH = "data/corpus.json"  # Your ABSynth data - sample data path
+tokenizer = create_tokenizer_from_data(
+    vocab_file=CORPUS_PATH)  # alternatively, use from_pretrained(vocab_file=VOCAB_file) to load from a pre-existing tokenizer file
 VOCAB_SIZE = tokenizer.get_vocab_size()
 
 # Create transformer model
 from trace.transformer import Transformer, TransformerConfig
 
 model_config = TransformerConfig(
-    model_type="decoder_only",        # "encoder_only", "decoder_only", "encoder_decoder"
+    model_type="decoder_only",  # "encoder_only", "decoder_only", "encoder_decoder"
     vocab_size=VOCAB_SIZE,
-    d_model=512,                      # Hidden dimension
-    num_heads=8,                      # Attention heads
-    num_decoder_layers=2,             # Number of layers
-    d_ff=2048,                        # Feed-forward dimension
-    max_seq_length=128,               # Maximum sequence length
+    d_model=512,  # Hidden dimension
+    num_heads=8,  # Attention heads
+    num_decoder_layers=2,  # Number of layers
+    d_ff=2048,  # Feed-forward dimension
+    max_seq_length=128,  # Maximum sequence length
     dropout=0.1,
-    device="cpu"                     # "cpu" or "cuda"
+    device="cpu"  # "cpu" or "cuda"
 )
 
 model = Transformer.from_config(model_config)
@@ -73,6 +74,7 @@ train_loader, val_loader, test_loader = get_dataloader(
 
 # Configure comprehensive training analysis
 from trace.training import Trainer, TrainingConfig
+
 # Optional: Load pre-trained probes for analysis.
 # If not provided, probes are randomly initialized and trained during analysis.
 probe_paths = {
@@ -91,21 +93,21 @@ training_config = TrainingConfig(
     learning_rate=1e-4,
     batch_size=32,
     device="cpu",
-    
+
     # Analysis modules (enable all)
-    track_hessian=False,               # Loss landscape analysis
-    track_linguistic_probes=False,     # POS understanding  
-    track_semantic_probes=False,       # Semantic role understanding
+    track_hessian=False,  # Loss landscape analysis
+    track_linguistic_probes=False,  # POS understanding  
+    track_semantic_probes=False,  # Semantic role understanding
     track_intrinsic_dimensions=False,  # Representation dimensionality
-    track_pos_performance=False,       # Output POS accuracy
+    track_pos_performance=False,  # Output POS accuracy
     track_semantic_roles_performance=False,  # Output semantic accuracy
     probe_load_paths=probe_paths,
     semantic_probe_load_path=semantic_probe_paths,
-    
+
     # Analysis frequency and visualization
-    track_interval=500,               # Analyze every 100 steps
-    save_visualization=True,          # Generate plots
-    plots_path="./analysis_results"   # Save results here
+    track_interval=500,  # Analyze every 100 steps
+    save_visualization=True,  # Generate plots
+    plots_path="./analysis_results"  # Save results here
 )
 
 # Train with comprehensive analysis
@@ -113,7 +115,7 @@ trainer = Trainer(training_config, tokenizer, model)
 best_loss, analysis_results = trainer.train(
     train_loader=train_loader,
     val_loader=val_loader,
-    test_loader=test_loader, 
+    test_loader=test_loader,
 )
 
 # Results automatically saved to ./analysis_results/ with:
