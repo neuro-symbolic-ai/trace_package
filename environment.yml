@@ -17,7 +17,6 @@ dependencies:
   - numba
   - pip:
       - git+https://github.com/nura-j/absynth.git
-      - trace==0.1
       - transformers
       - torch
       - huggingface-hub
