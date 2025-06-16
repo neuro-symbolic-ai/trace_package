@@ -37,7 +37,9 @@ class LogicalFormTokenizer(PreTrainedTokenizer):
     def load_vocab_from_file(self, vocab_file, save_if_not_exists=True):
         """Load vocabulary from a JSON file containing example sentences and semantics."""
         with open(vocab_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)['corpus']
+            data = json.load(f)
+            if isinstance(data, dict):
+                data = data.get('corpus', [])
 
         all_text = ""
         for item in data:
