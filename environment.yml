@@ -16,7 +16,7 @@ dependencies:
   - ipykernel
   - numba
   - pip:
-      - git+https://github.com/nura-j/absynth.git
+      - git+https://github.com/nura-j/ABSynth_dataset.git
       - transformers
       - torch
       - huggingface-hub
