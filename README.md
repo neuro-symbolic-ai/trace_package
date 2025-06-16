@@ -20,7 +20,7 @@
 ```bash
 # Clone the repository
 git clone https://github.com/nura-j/trace_package.git
-cd trace
+cd trace_package
 
 # [Optional] create and activate the conda environment
 conda env create -f environment.yml
