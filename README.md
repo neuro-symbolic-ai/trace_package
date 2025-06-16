@@ -37,7 +37,7 @@ pip install .
 # Create tokenizer from your corpus
 from trace.tokenizer import create_tokenizer_from_data
 
-CORPUS_PATH = "data/corpus.json"  # Your ABSynth data - sample data path
+CORPUS_PATH = "./data/corpus.json"  # Your ABSynth data - sample data path
 tokenizer = create_tokenizer_from_data(
     vocab_file=CORPUS_PATH)  # alternatively, use from_pretrained(vocab_file=VOCAB_file) to load from a pre-existing tokenizer file
 VOCAB_SIZE = tokenizer.get_vocab_size()
