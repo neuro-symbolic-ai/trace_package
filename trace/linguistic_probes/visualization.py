@@ -157,7 +157,7 @@ class ProbesVisualizer:
         print("Creating per-tag analysis plots...")
 
         for tag_name in self.organized['tags']:
-            plt.figure(figsize=(12, 8))
+            plt.figure(figsize=(10, 5))
 
             # Plot each layer as a separate line
             for layer_key in self.organized['layers']:
@@ -170,11 +170,11 @@ class ProbesVisualizer:
                         plt.plot(steps, confidences, marker='o', linewidth=2, label=layer_label, alpha=0.8)
 
             plt.title(f'{analysis_type.upper()} Tag: {tag_name} - Confidence Across Layers ({model_name})', fontsize=14)
-            plt.xlabel('Training Step', fontsize=12)
-            plt.ylabel('Confidence Score', fontsize=12)
+            plt.xlabel('Training Step', fontsize=14)
+            plt.ylabel('Confidence Score', fontsize=14)
             plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
             plt.grid(True, alpha=0.3)
-            plt.ylim(0, 1)
+            plt.ylim(0, 1.1)
             plt.tight_layout()
 
             if analysis_type == 'pos':
@@ -201,7 +201,7 @@ class ProbesVisualizer:
         print("Creating per-layer analysis plots...")
 
         for layer_key in self.organized['layers']:
-            plt.figure(figsize=(12, 8))
+            plt.figure(figsize=(10, 5))
 
             # Plot each tag as a separate line for this layer
             for tag_name in self.organized['tags']:
@@ -214,11 +214,11 @@ class ProbesVisualizer:
             layer_label = f"Layer {layer_key[0]} ({layer_key[1]})" if isinstance(layer_key,
                                                                                  tuple) else f"Layer {layer_key}"
             plt.title(f'{analysis_type.upper()} Analysis: All Tags - {layer_label} ({model_name})', fontsize=14)
-            plt.xlabel('Training Step', fontsize=12)
-            plt.ylabel('Confidence Score', fontsize=12)
+            plt.xlabel('Training Step', fontsize=14)
+            plt.ylabel('Confidence Score', fontsize=14)
             plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
             plt.grid(True, alpha=0.3)
-            plt.ylim(0, 1)
+            plt.ylim(0, 1.1)
             plt.tight_layout()
 
             if analysis_type == 'pos':
@@ -251,7 +251,7 @@ class ProbesVisualizer:
         colors = plt.cm.tab20(np.linspace(0, 1, len(self.organized['tags'])))
         line_styles = ['-', '--', '-.', ':'] * (len(self.organized['layers']) // 4 + 1)
 
-        plt.figure(figsize=(16, 10))
+        plt.figure(figsize=(10, 5))
 
         # Create legend handles
         tag_handles = []
@@ -275,7 +275,7 @@ class ProbesVisualizer:
                         plt.plot(steps, confidences,
                                  color=color,
                                  linestyle=line_style,
-                                 linewidth=2,
+                                 linewidth=3,
                                  alpha=0.7,
                                  label=None)  # No automatic labels
 
@@ -293,10 +293,10 @@ class ProbesVisualizer:
 
         plt.title(f'{analysis_type.upper()} Analysis: All Tags Across All Layers\n'
                   f'(Color = Tag, Line Style = Layer) - {model_name}', fontsize=14)
-        plt.xlabel('Training Step', fontsize=12)
-        plt.ylabel('Confidence Score', fontsize=12)
+        plt.xlabel('Training Step', fontsize=16)
+        plt.ylabel('Confidence Score', fontsize=16)
         plt.grid(True, alpha=0.3)
-        plt.ylim(0, 1)
+        plt.ylim(0, 1.1)
 
         # Tag legend (colors)
         tag_legend_elements = [Line2D([0], [0], color=color, lw=3, label=tag)
@@ -309,7 +309,7 @@ class ProbesVisualizer:
         # Add legends
         if tag_legend_elements:
             tag_legend = plt.legend(handles=tag_legend_elements, title=f'{analysis_type.upper()} Tags',
-                                    loc='upper left', bbox_to_anchor=(1.02, 1))
+                                    loc='lower left', bbox_to_anchor=(1.02, 1))
 
         if layer_legend_elements:
             layer_legend = plt.legend(handles=layer_legend_elements, title='Layers',
