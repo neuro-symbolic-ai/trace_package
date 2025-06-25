@@ -89,10 +89,10 @@ semantic_probe_paths = {
 
 training_config = TrainingConfig(
     # Training parameters
-    epochs=3,
-    learning_rate=1e-4,
-    batch_size=32,
-    device="cpu",
+    epochs=30,
+    learning_rate=1e-3,
+    batch_size=128,
+    device="cuda",
 
     # Analysis modules (enable all)
     track_hessian=False,  # Loss landscape analysis
@@ -101,8 +101,8 @@ training_config = TrainingConfig(
     track_intrinsic_dimensions=False,  # Representation dimensionality
     track_pos_performance=False,  # Output POS accuracy
     track_semantic_roles_performance=False,  # Output semantic accuracy
-    probe_load_paths=probe_paths,
-    semantic_probe_load_path=semantic_probe_paths,
+    #probe_load_paths=probe_paths,
+    #semantic_probe_load_path=semantic_probe_paths,
 
     # Analysis frequency and visualization
     track_interval=500,  # Analyze every 100 steps
@@ -531,8 +531,8 @@ config = LinguisticProbesConfig(
     # What to analyze
     track_pos=True,                   # Train POS probes
     track_semantic=True,              # Train semantic role probes
-    pos_granularity='basic',          # 'basic' or 'detailed'
-    semantic_granularity='basic',     # 'basic' or 'detailed'
+    pos_granularity='detailed',          # 'basic' or 'detailed'
+    semantic_granularity='detailed',     # 'basic' or 'detailed'
     
     # Layer selection (None = all layers)
     layer_indices=None,

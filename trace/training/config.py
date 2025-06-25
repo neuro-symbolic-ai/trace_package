@@ -219,6 +219,26 @@ class TrainingConfig:
 
         return cls(**config_dict)
 
+    def get_transformer_config(self) -> Dict[str, Any]:
+        """
+        Get a dictionary representation of the transformer configuration.
+
+        Returns:
+            Dictionary with transformer model parameters.
+        """
+        return {
+            'model_type': self.model_type,
+            'vocab_size': self.vocab_size,
+            'd_model': self.d_model,
+            'num_heads': self.num_heads,
+            'num_encoder_layers': self.num_encoder_layers,
+            'num_decoder_layers': self.num_decoder_layers,
+            'max_seq_length': self.max_seq_length,
+            'dropout': self.dropout,
+            'pad_idx': self.pad_idx,
+            'd_ff': self.d_ff,
+            'no_fnn': self.no_fnn
+        }
     def create_directories(self):
         """Create necessary directories for saving results."""
         if self.plots_path:
