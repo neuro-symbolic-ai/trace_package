@@ -433,7 +433,7 @@ class TrainingCallbacks:
             try:
                 print("Generating semantic probe visualizations...")
                 self.probe_semantic_analyzer.visualizer.plot_probe_confidence_analysis(
-                    confidence_data=self.analysis_results['linguistic_probes'],
+                    confidence_data=self.analysis_results['semantic_probes'],
                     model_name=model_name,
                     analysis_type=self.probe_semantic_analyzer.get_analysis_type(),
                     show_plots= self.config.show_plots,
