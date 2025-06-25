@@ -298,6 +298,7 @@ class ProbesVisualizer:
         plt.grid(True, alpha=0.3)
         plt.ylim(0, 1.1)
 
+
         # Tag legend (colors)
         tag_legend_elements = [Line2D([0], [0], color=color, lw=3, label=tag)
                                for tag, color in tag_handles]
