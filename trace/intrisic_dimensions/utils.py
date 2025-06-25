@@ -169,6 +169,7 @@ def compute_intrinsic_dimensions(
     for layer_name, layer_hidden in hidden_states.items():
         layer_data = layer_hidden.detach().cpu().numpy()
         layer_data = layer_data.reshape(layer_data.shape[0], -1)
+        layer_data = layer_data.to(device) if device else layer_data.to('cpu')
         results[layer_name] = config.id_estimator.fit_transform(layer_data)
 
     # for key, states in hidden_states.items():
