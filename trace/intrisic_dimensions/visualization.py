@@ -156,7 +156,7 @@ class IntrinsicDimensionsVisualizer:
         # ids = list(intrinsic_dimensions.values())
 
         plt.figure(figsize=(10, 6))
-        plt.plot(steps, IDs, marker='o', linestyle='-', linewidth=2, markersize=8, color='skyblue', alpha=0.8)
+        plt.plot(steps, IDs, marker='o', linestyle='-', linewidth=2, markersize=8, color='red', alpha=0.8)
 
         plt.xlabel('Step', fontsize=12)
         plt.ylabel('Intrinsic Dimension', fontsize=12)
