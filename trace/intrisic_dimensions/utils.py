@@ -29,7 +29,8 @@ def extract_hidden_representations(
     """
     model.eval()
     if device is None:
-        device = model.device if hasattr(model, 'device') else 'cpu'
+        device = 'cuda' if next(model.parameters()).is_cuda else 'cpu'
+
     # print('Initial layer indices:', layer_indices)
     # Set default layer indices
     if layer_indices is None:
@@ -145,7 +146,7 @@ def extract_hidden_representations(
         for (layer_index, layer_type) in layer_indices['decoder']:
             if hidden_dict[(layer_index, 'decoder')]:
                 hidden_states[(layer_index, 'decoder')] = torch.cat(hidden_dict[(layer_index, 'decoder')], dim=0)
-    print(f"Extracted hidden states for layers: {list(hidden_states.keys())}")
+    # print(f"Extracted hidden states for layers: {list(hidden_states.keys())}")
     return hidden_states, None, None  # pos_labels and semantic_labels are not used in this function
 
 
