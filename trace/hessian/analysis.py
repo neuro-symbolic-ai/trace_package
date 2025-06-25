@@ -54,7 +54,7 @@ class HessianAnalyzer:
             # Compute detailed metrics
             hessian_metrics = HessianMetrics.compute_detailed_hessian_metrics(eigenvalues)
             results["hessian"] = hessian_metrics
-
+            print('Hessian eigenvalues computed successfully.')
             # Component-specific analysis
             if self.config.track_component_hessian:
                 component_results = self.component_analyzer.analyze_all_components(
@@ -63,6 +63,7 @@ class HessianAnalyzer:
                     self.config.device
                 )
                 results["components"] = component_results
+                print("Component-specific Hessian analysis completed.")
                 # print("Component-specific Hessian analysis completed.")
                 # print(f"Component results: {component_results}")
 
@@ -73,14 +74,16 @@ class HessianAnalyzer:
                     eigenvalues, eigenvectors
                 )
                 results["alignment"] = alignment_results
+                print("Gradient-Hessian alignment computed successfully.")
 
             # Train-val landscape divergence
             if self.config.track_train_val_landscape_divergence and val_batch is not None:
                 divergence_results = self.compute_train_val_divergence(
                     model, loss_fn, train_batch, val_batch, model_type
                 )
-                results["train_val_divergence"] = divergence_results
 
+                results["train_val_divergence"] = divergence_results
+                print("Train-validation landscape divergence computed successfully.")
         except Exception as e:
             print(f"Error in Hessian analysis at step {step}: {e}")
             results["error"] = str(e)
@@ -152,6 +155,8 @@ class HessianAnalyzer:
             Dict with memorization signals
         """
         # Compute Hessian metrics on training data
+        device = 'cuda' if next(model.parameters()).is_cuda else 'cpu'
+        train_batch = {k: v.to(device) for k, v in train_batch.items()}
         train_eigenvalues, _ = get_hessian_eigenvectors(
             model, loss_fn, train_batch,
             device=self.config.device,
@@ -159,7 +164,8 @@ class HessianAnalyzer:
             n_top_vectors=self.config.n_components
         )
         train_metrics = HessianMetrics.compute_detailed_hessian_metrics(train_eigenvalues)
-
+        # print(f"Train eigenvalues: {train_eigenvalues}")
+        val_batch = {k: v.to(device) for k, v in val_batch.items()}
         # Compute Hessian metrics on validation data
         val_eigenvalues, _ = get_hessian_eigenvectors(
             model, loss_fn, val_batch,
