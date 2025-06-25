@@ -42,6 +42,9 @@ class HessianAnalyzer:
         try:
             # Basic Hessian eigenvalue analysis
             print("Computing Hessian eigenvalues and eigenvectors...")
+            # moving the batch to the correct device
+            device = 'cuda' if next(model.parameters()).is_cuda else 'cpu'
+            train_batch = {k: v.to(device) for k, v in train_batch.items()}
             eigenvalues, eigenvectors = get_hessian_eigenvectors(
                 model, loss_fn, train_batch,
                 device=self.config.device,
