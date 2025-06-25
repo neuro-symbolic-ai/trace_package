@@ -314,7 +314,7 @@ class ProbesVisualizer:
 
         if layer_legend_elements:
             layer_legend = plt.legend(handles=layer_legend_elements, title='Layers',
-                                      loc='upper left', bbox_to_anchor=(1.05, 0.6))
+                                      loc='upper left', bbox_to_anchor=(1.05, 0.2))
 
             # Add the first legend back if both exist
             if tag_legend_elements:
