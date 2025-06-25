@@ -164,7 +164,6 @@ def get_hessian_eigenvectors(
         return hessian_vector_product(v_tensor).cpu().detach().numpy()
 
     linear_operator = LinearOperator((num_params, num_params), matvec=matvec)
-    print('linear_operator shape:', linear_operator)
     eigenvalues, eigenvectors = eigsh(
         linear_operator,
         k=n_top_vectors,
@@ -172,8 +171,6 @@ def get_hessian_eigenvectors(
         which='LM',
         return_eigenvectors=True
     )
-    print('Computed eigenvalues:', eigenvalues)
     eigenvectors = np.transpose(eigenvectors)
-    print('Eigenvectors shape:', eigenvectors.shape)
     return eigenvalues[::-1], eigenvectors[::-1]
 
