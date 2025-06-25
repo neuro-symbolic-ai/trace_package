@@ -172,7 +172,8 @@ def get_hessian_eigenvectors(
         which='LM',
         return_eigenvectors=True
     )
+    print('Computed eigenvalues:', eigenvalues)
     eigenvectors = np.transpose(eigenvectors)
-
+    print('Eigenvectors shape:', eigenvectors.shape)
     return eigenvalues[::-1], eigenvectors[::-1]
 
