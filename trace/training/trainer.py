@@ -256,6 +256,11 @@ class Trainer:
             # exit(0)
             # Backward pass
             loss.backward()
+            print("Batch keys:", batch.keys())
+            print("Input shape:", batch["input_ids"].shape)
+            print("Input sample:", batch["input_ids"][0][:10])
+            print("Labels sample:", batch["labels"][0][:10])
+            print("Attention mask sample:", batch["attention_mask"][0][:10])
             print(f"Step {self.step_counter}: Loss = {loss.item():.6f}")
             for name, param in self.model.named_parameters():
                 if param.grad is not None:
