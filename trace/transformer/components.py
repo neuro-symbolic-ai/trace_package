@@ -256,8 +256,8 @@ class DecoderLayer(nn.Module):
         )
         x = self.norm2(x + self.dropout(cross_attn_output))
 
-        if self.feed_forward is None:
-            return x, self_attn_weights, cross_attn_weights
+        # if self.feed_forward is None:
+        #     return x, self_attn_weights, cross_attn_weights
 
         # Feed forward with residual connection and normalization
         ff_output = self.feed_forward(x)
