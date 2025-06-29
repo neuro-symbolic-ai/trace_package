@@ -220,6 +220,14 @@ class Trainer:
         self.model.train()
         total_train_loss = 0
         epoch_steps = 0
+        print(f"=== TRAINING CONFIG ===")
+        print(f"Learning rate: {self.config.learning_rate}")
+        print(f"Batch size: {self.config.batch_size}")
+        print(f"Warmup steps: {self.config.warmup_steps}")
+        print(f"Weight decay: {self.config.weight_decay}")
+        print(f"Dropout: {self.config.dropout}")
+        print(f"Model d_model: {self.model.d_model}")
+        print(f"Model num_heads: {self.model.num_heads}")
 
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch + 1}")
 
