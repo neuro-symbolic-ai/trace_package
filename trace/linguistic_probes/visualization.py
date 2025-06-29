@@ -296,7 +296,7 @@ class ProbesVisualizer:
         plt.xlabel('Training Step', fontsize=16)
         plt.ylabel('Confidence Score', fontsize=16)
         plt.grid(True, alpha=0.3)
-        plt.ylim(0, 1.1)
+        plt.ylim(-0.001, 1.1)
 
 
         # Tag legend (colors)
@@ -310,11 +310,11 @@ class ProbesVisualizer:
         # Add legends
         if tag_legend_elements:
             tag_legend = plt.legend(handles=tag_legend_elements, title=f'{analysis_type.upper()} Tags',
-                                    loc='lower left', bbox_to_anchor=(1.05, 1))
+                                    loc='lower left', bbox_to_anchor=(1.05, .7))
 
         if layer_legend_elements:
             layer_legend = plt.legend(handles=layer_legend_elements, title='Layers',
-                                      loc='upper left', bbox_to_anchor=(1.05, 0))
+                                      loc='upper left', bbox_to_anchor=(1.05, .3))
 
             # Add the first legend back if both exist
             if tag_legend_elements:

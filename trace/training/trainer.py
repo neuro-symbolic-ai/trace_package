@@ -10,7 +10,7 @@ from typing import Optional, Dict, Any, Tuple
 from .config import TrainingConfig
 from .utils import (
     prepare_batch_for_model, compute_loss, setup_hidden_state_hooks,
-    set_seed, save_checkpoint, validate_model
+    set_seed, save_checkpoint, validate_model, evaluate_model_comprehensive
 )
 from .callbacks import TrainingCallbacks
 
@@ -290,23 +290,33 @@ class Trainer:
         Returns:
             Dictionary of test metrics
         """
-        # TODO: Import and use the test_model function from original code
-        # For now, just compute test loss
-        test_loss = validate_model(
-            self.model, test_loader, self.criterion,
-            self.device, self.config.model_type, self.config.task_mode
+
+        return evaluate_model_comprehensive(
+            model=self.model,
+            test_loader=test_loader,
+            criterion=self.criterion,
+            device=self.device,
+            model_type=self.config.model_type,
+            task_mode=self.config.task_mode,
+            tokenizer=self.tokenizer,
+            ignore_index=self.config.ignore_index,
         )
-
-        # Placeholder for other metrics
-        metrics = {
-            "test_loss": test_loss,
-            "exact_match": 0.0,  # TODO: Implement
-            "token_accuracy": 0.0,  # TODO: Implement
-            "bleu_score": 0.0,  # TODO: Implement
-            "perplexity": math.exp(test_loss)
-        }
-
-        return metrics
+        #
+        # test_loss = validate_model(
+        #     self.model, test_loader, self.criterion,
+        #     self.device, self.config.model_type, self.config.task_mode
+        # )
+        #
+        # # Placeholder for other metrics
+        # metrics = {
+        #     "test_loss": test_loss,
+        #     "exact_match": 0.0,  # TODO: Implement
+        #     "token_accuracy": 0.0,  # TODO: Implement
+        #     "bleu_score": 0.0,  # TODO: Implement
+        #     "perplexity": math.exp(test_loss)
+        # }
+        #
+        # return metrics
 
     def _log_test_metrics(self, test_metrics: Dict[str, float], epoch: int):
         """

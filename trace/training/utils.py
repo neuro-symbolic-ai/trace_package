@@ -1,6 +1,11 @@
+import math
+import random
+import numpy as np
 import torch
 import torch.nn as nn
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
+
+from tqdm import tqdm
 
 # Model type constants - use strings with underscores consistently
 MODEL_TYPE_ENCODER_ONLY = "encoder_only"
@@ -129,20 +134,7 @@ def compute_loss(
         outputs: torch.Tensor,
         labels: torch.Tensor,
         criterion: nn.Module,
-        ignore_index: int = -100
 ) -> torch.Tensor:
-    """
-    Compute loss for the model outputs and labels.
-
-    Args:
-        outputs: Model outputs of shape [batch_size, seq_len, vocab_size]
-        labels: Label indices of shape [batch_size, seq_len]
-        criterion: Loss function
-        ignore_index: Index to ignore in loss computation
-
-    Returns:
-        Loss tensor
-    """
     # Ensure labels are properly formatted for cross-entropy loss
     # Reshape outputs to [batch_size * seq_len, vocab_size]
     outputs_flat = outputs.reshape(-1, outputs.size(-1))
@@ -193,16 +185,13 @@ def setup_hidden_state_hooks(model: nn.Module) -> Dict[str, torch.Tensor]:
 
 
 
-def set_seed(seed: int):
+def set_seed(seed: int = 42):
     """
     Set random seed for reproducibility.
 
     Args:
         seed: Random seed value
     """
-    import random
-    import numpy as np
-
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -309,3 +298,207 @@ def validate_model(
     avg_val_loss = total_val_loss / total_samples if total_samples > 0 else float('inf')
 
     return avg_val_loss
+
+
+def calculate_token_accuracy(pred_tokens: List[int], true_tokens: List[int]) -> float:
+    if not true_tokens:
+        return 0.0
+
+    # Truncate to the minimum length -> handle length mismatches
+    min_length = min(len(pred_tokens), len(true_tokens))
+    if min_length == 0:
+        return 0.0
+
+    matches = sum(p == t for p, t in zip(pred_tokens[:min_length], true_tokens[:min_length]))
+    return matches / len(true_tokens)
+
+
+def calculate_bleu(pred_tokens: List[int], true_tokens: List[int]) -> float:
+    """Calculate BLEU score between prediction and ground truth."""
+    try:
+        from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+    except ImportError:
+        print("Warning: NLTK not available. BLEU score will be 0.")
+        return 0.0
+
+    if not true_tokens:
+        return 0.0
+
+    # Convert token IDs to strings to handle potential tokenizer peculiarities
+    pred_str = [str(t) for t in pred_tokens]
+    true_str = [str(t) for t in true_tokens]
+
+    # Use smoothing to handle cases when there are no n-gram overlaps
+    smoothie = SmoothingFunction().method1
+
+    try:
+        return sentence_bleu([true_str], pred_str, smoothing_function=smoothie)
+    except Exception as e:
+        print(f"BLEU calculation error: {e}")
+        return 0.0
+
+
+def evaluate_model_comprehensive(
+        model: nn.Module,
+        test_loader,
+        criterion: nn.Module,
+        device: torch.device,
+        model_type: str,
+        task_mode: str,
+        tokenizer,
+        ignore_index: int = -100,
+) -> Dict[str, float]:
+    """
+    Comprehensive evaluation function that computes multiple metrics.
+
+    Args:
+        model: The transformer model
+        test_loader: DataLoader for test data
+        criterion: Loss function
+        device: Device for computation
+        model_type: Type of transformer model
+        task_mode: Training task mode
+        tokenizer: Tokenizer for decoding predictions
+        ignore_index: Index to ignore in loss computation
+        verbose: Whether to print detailed examples
+        num_examples: Number of examples to print for inspection
+
+    Returns:
+        Dictionary containing all evaluation metrics
+    """
+    model.eval()
+
+    model_type = model_type.replace('-', '_')
+
+    # Metrics tracking
+    total_test_loss = 0
+    total_samples = 0
+    metrics = {
+        "exact_match": 0,
+        "token_accuracy": 0,
+        "bleu": 0,
+    }
+
+    with torch.no_grad():
+        for batch in tqdm(test_loader, desc="Testing"):
+            model_inputs, labels_info = prepare_batch_for_model(
+                batch, model, model_type, task_mode, device, ignore_index
+            )
+
+            # Forward pass
+            outputs = model(**model_inputs)
+            loss = compute_loss(outputs, labels_info["labels"], criterion, ignore_index)
+            pred_tokens = torch.argmax(outputs, dim=-1).cpu()
+            true_tokens = labels_info["labels"].cpu()
+
+            for i in range(batch["input_ids"].size(0)):
+                input_text, pred_filtered, true_filtered = _process_sample_by_model_type(
+                    model_type, task_mode, batch, pred_tokens, true_tokens,
+                    i, tokenizer, ignore_index
+                )
+
+                # Calculate metrics
+                exact_match = int(_calculate_exact_match(pred_filtered, true_filtered, tokenizer))
+                token_accuracy = calculate_token_accuracy(pred_filtered, true_filtered)
+                bleu_score = calculate_bleu(pred_filtered, true_filtered)
+
+                # Update metrics
+                metrics["exact_match"] += exact_match
+                metrics["token_accuracy"] += token_accuracy
+                metrics["bleu"] += bleu_score
+                total_samples += 1
+            # Update total loss
+            total_test_loss += loss.item() * batch["input_ids"].size(0)
+
+    # Calculate average metrics
+    avg_test_loss = total_test_loss / total_samples if total_samples > 0 else 0
+    perplexity = math.exp(min(avg_test_loss, 100))
+    avg_metrics = {k: v / total_samples if total_samples > 0 else 0 for k, v in metrics.items()}
+
+    results = {
+        "test_loss": avg_test_loss,
+        "exact_match": avg_metrics["exact_match"],
+        "token_accuracy": avg_metrics["token_accuracy"],
+        "bleu_score": avg_metrics["bleu"],
+        "perplexity": perplexity
+    }
+    return results
+
+
+def _process_sample_by_model_type(
+        model_type: str,
+        task_mode: str,
+        batch: Dict[str, torch.Tensor],
+        pred_tokens: torch.Tensor,
+        true_tokens: torch.Tensor,
+        sample_idx: int,
+        tokenizer,
+        ignore_index: int
+) -> Tuple[str, List[int], List[int]]:
+    if model_type == "encoder_decoder":
+        # Input text from source
+        input_text = tokenizer.decode(batch["input_ids"][sample_idx].cpu().tolist())
+
+        # True and predicted sequences
+        pred_seq = pred_tokens[sample_idx].tolist()
+        true_seq = true_tokens[sample_idx].tolist()
+
+        # Filter out padding and ignore tokens
+        pred_filtered = [t for t in pred_seq if t != tokenizer.pad_token_id and t != ignore_index]
+        true_filtered = [t for t in true_seq if t != tokenizer.pad_token_id and t != ignore_index]
+
+    elif model_type == "decoder_only":
+        # Get input and label sequences
+        input_seq = batch["input_ids"][sample_idx].cpu().tolist()
+        label_seq = true_tokens[sample_idx].tolist()
+        pred_seq = pred_tokens[sample_idx].tolist()
+
+        # Find where the target sequence starts (first non-ignore token in labels)
+        target_start = 0
+        for j, token in enumerate(label_seq):
+            if token != ignore_index:
+                target_start = j
+                break
+
+        # Extract input part (for display)
+        input_part = input_seq[:target_start]
+        input_text = tokenizer.decode(input_part)
+
+        # Extract prediction and ground truth from target portion
+        pred_part = pred_seq[target_start:]
+        true_part = [token for token in label_seq[target_start:] if token != ignore_index]
+
+        # Filter out padding
+        pred_filtered = [t for t in pred_part if t != tokenizer.pad_token_id]
+        true_filtered = [t for t in true_part if t != tokenizer.pad_token_id]
+
+    elif model_type == "encoder_only":
+        input_text = tokenizer.decode(batch["input_ids"][sample_idx].cpu().tolist())
+
+        # For MLM, we compare masked positions
+        pred_seq = pred_tokens[sample_idx].tolist()
+        true_seq = true_tokens[sample_idx].tolist()
+
+        # Only compare tokens that were masked (not ignore_index)
+        mask_positions = [j for j, token in enumerate(true_seq) if token != ignore_index]
+        pred_filtered = [pred_seq[j] for j in mask_positions if j < len(pred_seq)]
+        true_filtered = [true_seq[j] for j in mask_positions]
+
+    else:
+        # Fallback
+        input_text = tokenizer.decode(batch["input_ids"][sample_idx].cpu().tolist())
+        pred_filtered = []
+        true_filtered = []
+
+    return input_text, pred_filtered, true_filtered
+
+
+def _calculate_exact_match(pred_filtered: List[int], true_filtered: List[int], tokenizer) -> bool:
+    if not pred_filtered and not true_filtered:
+        return True
+    if not pred_filtered or not true_filtered:
+        return False
+
+    pred_text = tokenizer.decode(pred_filtered).strip()
+    true_text = tokenizer.decode(true_filtered).strip()
+    return pred_text == true_text
