@@ -90,6 +90,10 @@ class Trainer:
         print(f"Number of model parameters: {sum(p.numel() for p in self.model.parameters())}")
         print(
             f"Number of optimizer parameters: {sum(p.numel() for g in self.optimizer.param_groups for p in g['params'])}")
+        for name, param in self.model.named_parameters():
+            if param.requires_grad and not any(param is p for g in self.optimizer.param_groups for p in g['params']):
+                print(f"[!] Parameter {name} missing from optimizer.")
+
         exit(1)
 
         # Set up learning rate scheduler if warmup is requested
