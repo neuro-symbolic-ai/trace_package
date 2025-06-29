@@ -229,6 +229,7 @@ class Trainer:
         print(f"Model d_model: {self.model.d_model}")
         print(f"Model num_heads: {self.model.num_heads}")
 
+
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch + 1}")
 
         for batch in progress_bar:
