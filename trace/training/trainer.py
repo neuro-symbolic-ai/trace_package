@@ -232,14 +232,6 @@ class Trainer:
                 batch, self.model, self.config.model_type,
                 self.config.task_mode, self.device, self.config.ignore_index
             )
-            batch = next(iter(train_loader))
-
-            print("First batch (input_ids):")
-            for i in range(3):
-                print(batch["input_ids"][i].tolist())
-
-            print("Seed check:", random.getstate()[1][0])
-            exit(1)
             # Forward pass
             outputs = self.model(**model_inputs)
 
