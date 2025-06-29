@@ -25,6 +25,8 @@ class Transformer(nn.Module):
         self.vocab_size = config.vocab_size
         self.d_model = config.d_model
         self.pad_idx = config.pad_idx
+        self.num_heads = config.num_heads
+        self.d_ff = config.d_ff if config.d_ff is not None else config.d_model * 4
 
         # Input embedding and positional encoding
         self.embedding = nn.Embedding(config.vocab_size, config.d_model, padding_idx=config.pad_idx)
