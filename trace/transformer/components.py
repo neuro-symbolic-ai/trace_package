@@ -272,7 +272,6 @@ class DecoderOnlyLayer(nn.Module):
     """
     Simplified decoder layer for decoder-only models without cross-attention.
     """
-
     def __init__(
             self,
             d_model: int,
