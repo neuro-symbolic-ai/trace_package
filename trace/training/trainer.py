@@ -1,7 +1,5 @@
 import math
 import os
-from random import random
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -89,12 +87,12 @@ class Trainer:
             optimizer_kwargs["weight_decay"] = self.config.weight_decay
 
         self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
-        print(f"Number of model parameters: {sum(p.numel() for p in self.model.parameters())}")
-        print(
-            f"Number of optimizer parameters: {sum(p.numel() for g in self.optimizer.param_groups for p in g['params'])}")
-        for name, param in self.model.named_parameters():
-            if param.requires_grad and not any(param is p for g in self.optimizer.param_groups for p in g['params']):
-                print(f"[!] Parameter {name} missing from optimizer.")
+        # print(f"Number of model parameters: {sum(p.numel() for p in self.model.parameters())}")
+        # print(
+        #     f"Number of optimizer parameters: {sum(p.numel() for g in self.optimizer.param_groups for p in g['params'])}")
+        # for name, param in self.model.named_parameters():
+        #     if param.requires_grad and not any(param is p for g in self.optimizer.param_groups for p in g['params']):
+        #         print(f"[!] Parameter {name} missing from optimizer.")
 
 
 
@@ -223,14 +221,14 @@ class Trainer:
                 batch, self.model, self.config.model_type,
                 self.config.task_mode, self.device, self.config.ignore_index
             )
-            batch = next(iter(train_loader))
-
-            print("First batch (input_ids):")
-            for i in range(3):
-                print(batch["input_ids"][i].tolist())
-
-            print("Seed check:", random.getstate()[1][0])
-            exit(1)
+            # batch = next(iter(train_loader))
+            #
+            # print("First batch (input_ids):")
+            # for i in range(3):
+            #     print(batch["input_ids"][i].tolist())
+            #
+            # print("Seed check:", random.getstate()[1][0])
+            # exit(1)
             # Forward pass
             outputs = self.model(**model_inputs)
 
