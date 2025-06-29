@@ -261,6 +261,7 @@ class Trainer:
             print("Learning rate:", self.optimizer.param_groups[0]['lr'])
             print("Weight decay:", self.optimizer.param_groups[0].get('weight_decay', 'None'))
             print("Optimizer param groups:", len(self.optimizer.param_groups))
+            exit(1)
             # print("Batch keys:", batch.keys())
             # print("Input shape:", batch["input_ids"].shape)
             # print("Input sample:", batch["input_ids"][0][:10])
