@@ -232,6 +232,11 @@ class Trainer:
                 batch, self.model, self.config.model_type,
                 self.config.task_mode, self.device, self.config.ignore_index
             )
+            for b in range(3):
+                print("Input IDs: ", batch['input_ids'][b].tolist())
+                print("Labels:    ", batch['labels'][b].tolist())
+            # print("Model inputs:", model_inputs)
+            exit(1)
             # Forward pass
             outputs = self.model(**model_inputs)
 
