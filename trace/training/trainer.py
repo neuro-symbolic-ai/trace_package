@@ -94,7 +94,7 @@ class Trainer:
             if param.requires_grad and not any(param is p for g in self.optimizer.param_groups for p in g['params']):
                 print(f"[!] Parameter {name} missing from optimizer.")
 
-        exit(1)
+
 
         # Set up learning rate scheduler if warmup is requested
         if self.config.warmup_steps:
@@ -230,6 +230,9 @@ class Trainer:
                 outputs, labels_info["labels"],
                 self.criterion,
             )
+            print(f"Loss requires grad: {loss.requires_grad}")
+            print(f"Loss grad_fn: {loss.grad_fn}")
+            exit(1)
 
             # Backward pass
             loss.backward()
