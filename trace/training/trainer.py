@@ -241,7 +241,7 @@ class Trainer:
                 self.criterion,
             )
             print("Logits:", outputs.shape, "min", outputs.min().item(), "max", outputs.max().item())
-            print("Labels:", labels_info.shape, labels_info.dtype)
+            print("Labels:", labels_info["labels"].shape, labels_info["labels"].dtype)
             print("Loss:", loss.item())
             exit(0)
             # Backward pass
