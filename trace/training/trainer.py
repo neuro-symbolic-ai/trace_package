@@ -1,5 +1,7 @@
 import math
 import os
+from random import random
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -221,11 +223,13 @@ class Trainer:
                 batch, self.model, self.config.model_type,
                 self.config.task_mode, self.device, self.config.ignore_index
             )
-            print("Labels stats:", labels_info["labels"].min(), labels_info["labels"].max())
-            print("Example input IDs:", batch["input_ids"][0])
-            print("Example labels:", labels_info["labels"][0])
+            batch = next(iter(train_loader))
 
-            print("Ignore index used:", self.criterion.ignore_index)
+            print("First batch (input_ids):")
+            for i in range(3):
+                print(batch["input_ids"][i].tolist())
+
+            print("Seed check:", random.getstate()[1][0])
             exit(1)
             # Forward pass
             outputs = self.model(**model_inputs)
