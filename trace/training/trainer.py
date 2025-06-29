@@ -262,7 +262,8 @@ class Trainer:
             self.optimizer.step()
 
             # Update learning rate if using scheduler
-            if self.scheduler:
+            # if self.scheduler:
+            if self.config.warmup_steps:
                 self.scheduler.step()
 
             # Update counters
