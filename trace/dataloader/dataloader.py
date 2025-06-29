@@ -1,6 +1,7 @@
 import json
 import os
 import torch
+from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader, random_split
 from absynth.corpus import SyntheticCorpusGenerator
 
@@ -292,19 +293,25 @@ def get_dataloader(corpus_path,
         corpus.save(corpus_path, format="sentences_only", indent=2)
 
     dataset = TextDataset(corpus_path, tokenizer, max_length=max_length, model_type=model_type)
+    val_test_split = val_split + test_split
+    train_data, temp_data = train_test_split(dataset, test_size=val_test_split, random_state=42)
+    val_data, test_data = train_test_split(temp_data, test_size=test_split / val_test_split, random_state=42)
 
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
     # Split into train and validation sets
-    total_size = len(dataset)
-    test_size = int(total_size * test_split)
-    val_size = int(total_size * val_split)
-    train_size = total_size - val_size - test_size
-    torch.manual_seed(42)
-
-    train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
-
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) if train_size > 0 else None
-    val_loader = DataLoader(val_dataset, batch_size=batch_size) if val_size > 0 else None
-    test_loader = DataLoader(test_dataset, batch_size=batch_size) if test_size > 0 else None
+    # total_size = len(dataset)
+    # test_size = int(total_size * test_split)
+    # val_size = int(total_size * val_split)
+    # train_size = total_size - val_size - test_size
+    # torch.manual_seed(42)
+    #
+    # train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+    #
+    # train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) if train_size > 0 else None
+    # val_loader = DataLoader(val_dataset, batch_size=batch_size) if val_size > 0 else None
+    # test_loader = DataLoader(test_dataset, batch_size=batch_size) if test_size > 0 else None
 
     # val_size = int(len(dataset) * val_split)
     # train_size = len(dataset) - val_size
