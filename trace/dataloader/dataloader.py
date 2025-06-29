@@ -16,6 +16,7 @@ class TextDataset(Dataset):
         """
         Initialize dataset.
 
+
         Args:
             corpus_path: Path to the JSON file containing sentence-semantics pairs
             tokenizer: LogicalFormTokenizer instance
