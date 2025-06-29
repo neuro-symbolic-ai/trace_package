@@ -240,10 +240,10 @@ class Trainer:
                 outputs, labels_info["labels"],
                 self.criterion,
             )
-            print("Logits:", outputs.shape, "min", outputs.min().item(), "max", outputs.max().item())
-            print("Labels:", labels_info["labels"].shape, labels_info["labels"].dtype)
-            print("Loss:", loss.item())
-            exit(0)
+            # print("Logits:", outputs.shape, "min", outputs.min().item(), "max", outputs.max().item())
+            # print("Labels:", labels_info["labels"].shape, labels_info["labels"].dtype)
+            # print("Loss:", loss.item())
+            # exit(0)
             # Backward pass
             loss.backward()
             # predictions = torch.argmax(outputs, dim=-1).cpu()
