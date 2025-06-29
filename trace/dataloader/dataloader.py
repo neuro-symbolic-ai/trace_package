@@ -11,7 +11,7 @@ class TextDataset(Dataset):
     Designed for translating natural language sentences to formal semantics.
     """
 
-    def __init__(self, corpus_path, tokenizer, max_length=128, model_type="encoder-decoder", task_mode="original",
+    def __init__(self, corpus_path, tokenizer, max_length=128, model_type="encoder-decoder", task_mode="next_token",
                  mlm_prob=0.25, mask_prob=0.8, random_prob=0.0, keep_prob=0.1,):
         """
         Initialize dataset.
@@ -198,6 +198,7 @@ class TextDataset(Dataset):
             combined_ids = [self.cls_token_id] + sentence_ids + [self.sep_token_id] + semantics_ids + [
                 self.sep_token_id]
             combined_ids = combined_ids[:self.max_length]
+
 
             # Find separator position for loss masking
             if self.sep_token_id in combined_ids:
