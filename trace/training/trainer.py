@@ -220,7 +220,7 @@ class Trainer:
             # Calculate loss
             loss = compute_loss(
                 outputs, labels_info["labels"],
-                self.criterion, self.config.ignore_index
+                self.criterion,
             )
 
             # Backward pass
