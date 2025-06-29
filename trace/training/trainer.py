@@ -221,21 +221,22 @@ class Trainer:
                 batch, self.model, self.config.model_type,
                 self.config.task_mode, self.device, self.config.ignore_index
             )
+            print("Labels stats:", labels_info["labels"].min(), labels_info["labels"].max())
+            print("Example input IDs:", batch["input_ids"][0])
+            print("Example labels:", labels_info["labels"][0])
 
+            print("Ignore index used:", self.criterion.ignore_index)
+            exit(1)
             # Forward pass
             outputs = self.model(**model_inputs)
-            print("Model output shape:", outputs.shape)
 
             # Calculate loss
             loss = compute_loss(
                 outputs, labels_info["labels"],
                 self.criterion,
             )
-            print(f"Loss: {loss.item()}")
             # Backward pass
             loss.backward()
-            grad_norm = sum(p.grad.norm().item() for p in self.model.parameters() if p.grad is not None)
-            print("Total grad norm:", grad_norm)
             # predictions = torch.argmax(outputs, dim=-1).cpu()
             # Run analysis if needed (before optimizer step to capture gradients)
             if self.callbacks.should_track(self.step_counter):
@@ -250,8 +251,7 @@ class Trainer:
 
             # Apply gradients
             self.optimizer.step()
-            print("Optimizer step completed.")
-            exit(1)
+
             # Update learning rate if using scheduler
             if self.scheduler:
                 self.scheduler.step()
