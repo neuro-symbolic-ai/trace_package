@@ -256,18 +256,18 @@ class Trainer:
             # exit(0)
             # Backward pass
             loss.backward()
-            print("Batch keys:", batch.keys())
-            print("Input shape:", batch["input_ids"].shape)
-            print("Input sample:", batch["input_ids"][0][:10])
-            print("Labels sample:", batch["labels"][0][:10])
-            print("Attention mask sample:", batch["attention_mask"][0][:10])
-            print(f"Step {self.step_counter}: Loss = {loss.item():.6f}")
-            for name, param in self.model.named_parameters():
-                if param.grad is not None:
-                    grad_norm = param.grad.norm().item()
-                    print(f"  {name}: grad_norm = {grad_norm:.6f}")
-                else:
-                    print(f"  {name}: NO GRADIENT")
+            # print("Batch keys:", batch.keys())
+            # print("Input shape:", batch["input_ids"].shape)
+            # print("Input sample:", batch["input_ids"][0][:10])
+            # print("Labels sample:", batch["labels"][0][:10])
+            # print("Attention mask sample:", batch["attention_mask"][0][:10])
+            # print(f"Step {self.step_counter}: Loss = {loss.item():.6f}")
+            # for name, param in self.model.named_parameters():
+            #     if param.grad is not None:
+            #         grad_norm = param.grad.norm().item()
+            #         print(f"  {name}: grad_norm = {grad_norm:.6f}")
+            #     else:
+            #         print(f"  {name}: NO GRADIENT")
             # exit(1)
             # predictions = torch.argmax(outputs, dim=-1).cpu()
             # Run analysis if needed (before optimizer step to capture gradients)
