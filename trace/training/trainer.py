@@ -230,23 +230,20 @@ class Trainer:
                 outputs, labels_info["labels"],
                 self.criterion,
             )
-            print(f"Loss requires grad: {loss.requires_grad}")
-            print(f"Loss grad_fn: {loss.grad_fn}")
-            exit(1)
 
             # Backward pass
             loss.backward()
             # predictions = torch.argmax(outputs, dim=-1).cpu()
             # Run analysis if needed (before optimizer step to capture gradients)
-            if self.callbacks.should_track(self.step_counter):
-                self.callbacks.run_analysis(
-                    self.model, batch, self.hidden_states,
-                    self.step_counter,
-                    val_loader=None,
-                    tokenizer=self.tokenizer,
-                    predictions=outputs
-                    # Could pass val_loader here
-                )
+            # if self.callbacks.should_track(self.step_counter):
+            #     self.callbacks.run_analysis(
+            #         self.model, batch, self.hidden_states,
+            #         self.step_counter,
+            #         val_loader=None,
+            #         tokenizer=self.tokenizer,
+            #         predictions=outputs
+            #         # Could pass val_loader here
+            #     )
 
             # Apply gradients
             self.optimizer.step()
