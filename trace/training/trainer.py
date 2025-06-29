@@ -236,6 +236,7 @@ class Trainer:
                     predictions=outputs
                     # Could pass val_loader here
                 )
+                self.model.train()  # Ensure model is in training mode
 
             # Apply gradients
             self.optimizer.step()
