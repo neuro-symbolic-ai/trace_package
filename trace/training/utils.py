@@ -387,7 +387,7 @@ def evaluate_model_comprehensive(
 
             # Forward pass
             outputs = model(**model_inputs)
-            loss = compute_loss(outputs, labels_info["labels"], criterion, ignore_index)
+            loss = compute_loss(outputs, labels_info["labels"], criterion)
             pred_tokens = torch.argmax(outputs, dim=-1).cpu()
             true_tokens = labels_info["labels"].cpu()
 
