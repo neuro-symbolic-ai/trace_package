@@ -272,10 +272,10 @@ class Trainer:
             self.optimizer.step()
 
             # Update learning rate if using scheduler
-            # if self.scheduler:
-            if self.config.warmup_steps:
+            if self.scheduler:
+            # if self.config.warmup_steps:
                 self.scheduler.step()
-            self.optimizer.zero_grad()
+            # self.optimizer.zero_grad()
             # Update counters
             batch_size = batch["input_ids"].size(0)
             total_train_loss += loss.item() * batch_size
