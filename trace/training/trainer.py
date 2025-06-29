@@ -145,15 +145,15 @@ class Trainer:
         print(f"Device: {self.device}")
         print(f"Model: {self.model}")
 
-        # Print model summary
-        batch = next(iter(train_loader))
-        print("Tokenized input:", self.tokenizer.encode("Translate: John eats"))
-
-        print("First batch (input_ids):")
-        for i in range(3):
-            print(batch["input_ids"][i].tolist())
-
-        print("Seed check:", random.getstate()[1][0])
+        # # Print model summary
+        # batch = next(iter(train_loader))
+        # print("Tokenized input:", self.tokenizer.encode("Translate: John eats"))
+        #
+        # print("First batch (input_ids):")
+        # for i in range(3):
+        #     print(batch["input_ids"][i].tolist())
+        #
+        # print("Seed check:", random.getstate()[1][0])
 
         # Main training loop
         for epoch in range(self.config.epochs):
