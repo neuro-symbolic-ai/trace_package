@@ -298,12 +298,12 @@ def get_dataloader(corpus_path,
     print("First 3 items:")
     for i in range(3):
         print(f"  Item {i}: {dataset[i]}")
-    exit(1)
+
     val_test_split = val_split + test_split
     train_data, temp_data = train_test_split(dataset, test_size=val_test_split, random_state=42)
     val_data, test_data = train_test_split(temp_data, test_size=test_split / val_test_split, random_state=42)
 
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
     # Split into train and validation sets
