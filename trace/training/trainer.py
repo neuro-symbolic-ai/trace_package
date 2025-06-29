@@ -265,7 +265,7 @@ class Trainer:
             # if self.scheduler:
             if self.config.warmup_steps:
                 self.scheduler.step()
-
+            self.optimizer.zero_grad()
             # Update counters
             batch_size = batch["input_ids"].size(0)
             total_train_loss += loss.item() * batch_size
