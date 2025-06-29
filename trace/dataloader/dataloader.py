@@ -293,6 +293,12 @@ def get_dataloader(corpus_path,
         corpus.save(corpus_path, format="sentences_only", indent=2)
 
     dataset = TextDataset(corpus_path, tokenizer, max_length=max_length, model_type=model_type)
+    print("Corpus path:", corpus_path)
+    print("Dataset size:", len(dataset))
+    print("First 3 items:")
+    for i in range(3):
+        print(f"  Item {i}: {dataset[i]}")
+    exit(1)
     val_test_split = val_split + test_split
     train_data, temp_data = train_test_split(dataset, test_size=val_test_split, random_state=42)
     val_data, test_data = train_test_split(temp_data, test_size=test_split / val_test_split, random_state=42)
