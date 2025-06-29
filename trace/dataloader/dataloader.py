@@ -309,7 +309,7 @@ def get_dataloader(corpus_path,
     val_data, test_data = train_test_split(temp_data, test_size=test_split / val_test_split, random_state=42)
     # Set the random state specifically for DataLoader shuffling
 
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
     # Split into train and validation sets
