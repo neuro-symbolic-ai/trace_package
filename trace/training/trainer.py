@@ -104,10 +104,11 @@ class Trainer:
 
         # Set up learning rate scheduler if warmup is requested
         if self.config.warmup_steps:
-            self.scheduler = LambdaLR(
-                self.optimizer,
-                lr_lambda=lambda step: min(1.0, step / self.config.warmup_steps)
-            )
+            print('passing warmup steps')
+            # self.scheduler = LambdaLR(
+            #     self.optimizer,
+            #     lr_lambda=lambda step: min(1.0, step / self.config.warmup_steps)
+            # )
 
     def _setup_model_hooks(self):
         """Set up forward hooks to capture hidden states."""
