@@ -10,7 +10,6 @@ class TextDataset(Dataset):
     Custom dataset for tokenized text and semantic labels using LogicalFormTokenizer.
     Designed for translating natural language sentences to formal semantics.
     """
-
     def __init__(self, corpus_path, tokenizer, max_length=128, model_type="encoder-decoder", task_mode="next_token",
                  mlm_prob=0.25, mask_prob=0.8, random_prob=0.0, keep_prob=0.1,):
         """
