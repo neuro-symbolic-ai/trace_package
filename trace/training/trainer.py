@@ -88,6 +88,11 @@ class Trainer:
             optimizer_kwargs["weight_decay"] = self.config.weight_decay
 
         self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
+        print('=== OPTIMIZER SETUP ===')
+        print(f"Optimizer type: {type(self.optimizer).__name__}")
+        print(f"Learning rate: {self.config.learning_rate}")
+        print(f"Weight decay: {self.config.weight_decay}")
+
         # print(f"Number of model parameters: {sum(p.numel() for p in self.model.parameters())}")
         # print(
         #     f"Number of optimizer parameters: {sum(p.numel() for g in self.optimizer.param_groups for p in g['params'])}")
