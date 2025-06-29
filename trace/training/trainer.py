@@ -268,7 +268,7 @@ class Trainer:
                     print(f"  {name}: grad_norm = {grad_norm:.6f}")
                 else:
                     print(f"  {name}: NO GRADIENT")
-            exit(1)
+            # exit(1)
             # predictions = torch.argmax(outputs, dim=-1).cpu()
             # Run analysis if needed (before optimizer step to capture gradients)
             if self.callbacks.should_track(self.step_counter):
