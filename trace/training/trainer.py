@@ -87,6 +87,10 @@ class Trainer:
             optimizer_kwargs["weight_decay"] = self.config.weight_decay
 
         self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
+        print(f"Number of model parameters: {sum(p.numel() for p in self.model.parameters())}")
+        print(
+            f"Number of optimizer parameters: {sum(p.numel() for g in self.optimizer.param_groups for p in g['params'])}")
+        exit(1)
 
         # Set up learning rate scheduler if warmup is requested
         if self.config.warmup_steps:
@@ -236,7 +240,6 @@ class Trainer:
                     predictions=outputs
                     # Could pass val_loader here
                 )
-                self.model.train()  # Ensure model is in training mode
 
             # Apply gradients
             self.optimizer.step()
