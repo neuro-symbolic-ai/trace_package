@@ -398,6 +398,7 @@ class SemanticTagger(BaseTagger):
             # Default for anything unrecognized
             else:
                 print(f"Warning: Unknown token '{clean_token}' - using fallback to 'OTHER'")
+                print(f'Original text: {text}')
                 sem = "OTHER"
 
             tagged.append((token, sem))
