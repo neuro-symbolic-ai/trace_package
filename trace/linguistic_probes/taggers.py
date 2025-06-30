@@ -152,8 +152,6 @@ class POSTagger(BaseTagger):
 
             # Rule-based tagging for synthetic tokens
             pos = self._rule_based_tag(base, token)
-            if pos == "OTHER":
-                print(f'Original text: "{text}"...')
 
             # Apply granularity mapping
             final_pos = self.pos_mapping.get(pos, "OTHER")

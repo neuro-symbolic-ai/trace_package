@@ -136,7 +136,7 @@ class POSTagSet(BaseTagSet):
                 "ADV": 3,
                 "PREP": 4,
                 "CONJ": 5,
-                "OTHER": 6,
+                # "OTHER": 6,
                 # "DET": 5,
             }
         else:  # detailed
@@ -154,7 +154,7 @@ class POSTagSet(BaseTagSet):
                 "PREP": 10,
                 "RESULT": 11,
                 "CONJ": 12,
-                "OTHER": 13
+                # "OTHER": 13
             }
 
     @classmethod
