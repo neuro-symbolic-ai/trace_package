@@ -199,6 +199,7 @@ class POSTagger(BaseTagger):
             if self.use_nltk_fallback:
                 return self._nltk_fallback_tag(original_token)
             else:
+                print(f"Warning: Unknown token '{original_token}' - using fallback to 'OTHER'")
                 return "OTHER"
 
     def _nltk_fallback_tag(self, token: str) -> str:
