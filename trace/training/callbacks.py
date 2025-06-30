@@ -128,6 +128,8 @@ class TrainingCallbacks:
         # Linguistic (POS) Probes Analyzer
         if self.config.track_linguistic_probes:
             print("Setting up linguistic probes analyzer...")
+            # Determine number of POS categories
+            self.config.probe_num_features = len(self.config.get_pos_categories())
             probe_config = LinguisticProbesConfig(
                 probe_type=self.config.probe_type,
                 layer_indices=self.config.probe_layers,
@@ -155,6 +157,7 @@ class TrainingCallbacks:
         # Semantic Probes Analyzer
         if self.config.track_semantic_probes:
             print("Setting up semantic probes analyzer...")
+            self.config.semantic_probe_num_features = len(self.config.get_semantic_categories())
             semantic_config = LinguisticProbesConfig(
                 probe_type=self.config.semantic_probe_type,
                 layer_indices=self.config.semantic_probe_layers,
