@@ -152,6 +152,8 @@ class POSTagger(BaseTagger):
 
             # Rule-based tagging for synthetic tokens
             pos = self._rule_based_tag(base, token)
+            if pos == "OTHER":
+                print(f'Original text: "{text}"...')
 
             # Apply granularity mapping
             final_pos = self.pos_mapping.get(pos, "OTHER")
@@ -313,7 +315,6 @@ class SemanticTagger(BaseTagger):
         Returns:
             List of (token, tag) tuples
         """
-        return self._tokenize_and_tag_semantic_roles(text)
         tokens = text.split()
         tagged = []
 
@@ -333,91 +334,6 @@ class SemanticTagger(BaseTagger):
             final_tagged.append((token, final_role))
 
         return final_tagged
-
-    def _tokenize_and_tag_semantic_roles(self, text: str) -> List[Tuple[str, str]]:
-        """
-        Tag synthetic tokens with their semantic roles based on the
-        templates used for generation. This function uses pattern matching
-        to determine semantic roles in the synthetic data.
-        """
-        tokens = text.split()
-        tagged = []
-
-        # First pass: Identify explicit token types from their prefixes
-        # This matches the synthetic data generation pattern in the template manager
-        for token in tokens:
-            clean_token = token.lower().strip(",.!?;:")
-
-            # AGENT role (typically subject nouns)
-            if clean_token.startswith("noun") and len(tagged) < 2:  # First noun in sentence likely agent
-                sem = "AGENT"
-
-            # PATIENT role (typically object nouns)
-            elif clean_token.startswith("noun") and any(t[1] == "ACTION" for t in tagged):
-                sem = "PATIENT"
-
-            # ACTION role (verbs of all types)
-            elif any(clean_token.startswith(prefix) for prefix in [
-                "transitive_verb", "intransitive_verb", "communication_verb",
-                "motion_verb", "change_verb"
-            ]):
-                sem = "ACTION"
-
-                # Subcategorize verb types for more detailed analysis
-                if clean_token.startswith("motion_verb"):
-                    sem = "MOTION"
-                elif clean_token.startswith("communication_verb"):
-                    sem = "COMMUNICATION"
-                elif clean_token.startswith("change_verb"):
-                    sem = "CHANGE"
-
-            # LOCATION role
-            elif clean_token.startswith("location"):
-                sem = "LOCATION"
-
-            # TIME role
-            elif clean_token.startswith("temporal"):
-                sem = "TIME"
-
-            # RESULT role (outcomes)
-            elif clean_token.startswith("result"):
-                sem = "RESULT"
-
-            # MODIFIER roles
-            elif clean_token.startswith("adj"):
-                sem = "PROPERTY"
-            elif clean_token.startswith("adv"):
-                sem = "MANNER"
-
-            # RELATION roles
-            elif clean_token.startswith("prep"):
-                sem = "RELATION"
-            elif clean_token.startswith("conj"):
-                sem = "CONNECTOR"
-
-            # Default for anything unrecognized
-            else:
-                print(f"Warning: Unknown token '{clean_token}' - using fallback to 'OTHER'")
-                print(f'Original text: {text}')
-                sem = "OTHER"
-
-            tagged.append((token, sem))
-
-        # Second pass: Adjust based on contextual patterns in the templates
-        # This handles cases where semantic role depends on position in sentence
-        for i in range(len(tagged)):
-            token, role = tagged[i]
-
-            # Adjust roles based on sentence position and surrounding tokens
-            # For example, a noun after a motion verb and preposition is likely a LOCATION
-            if i > 2 and role == "PATIENT" and tagged[i - 1][1] == "RELATION" and tagged[i - 2][1] == "MOTION":
-                tagged[i] = (token, "DESTINATION")
-
-            # A noun after a CHANGE verb is likely a RESULT
-            if i > 1 and role == "PATIENT" and tagged[i - 1][1] == "CHANGE":
-                tagged[i] = (token, "RESULT")
-
-        return tagged
 
     def _assign_initial_role(self, clean_token: str, position: int, existing_tags: List[Tuple[str, str]]) -> str:
         """Assign initial semantic role based on token patterns."""
@@ -466,7 +382,6 @@ class SemanticTagger(BaseTagger):
 
         # Default
         else:
-            print(f"Warning: Unknown token '{clean_token}' - using fallback to 'OTHER'")
             return "OTHER"
 
     def _apply_contextual_adjustments(self, tokens: List[str], tagged: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
