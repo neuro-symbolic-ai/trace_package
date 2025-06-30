@@ -380,6 +380,7 @@ class SemanticTagger(BaseTagger):
 
         # Default
         else:
+            print(f"Warning: Unknown token '{clean_token}' - using fallback to 'OTHER'")
             return "OTHER"
 
     def _apply_contextual_adjustments(self, tokens: List[str], tagged: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
