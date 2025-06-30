@@ -17,13 +17,13 @@ class LinearProbe(nn.Module):
     def __init__(
             self,
             input_dim: int,
-            # num_classes: int,
             config: Optional[LinguisticProbesConfig] = None,
+            num_features: int = 8,
             # device: str = "cpu"
     ):
         super().__init__()
         self.device = config.device if config else "cpu"
-        self.num_classes = config.num_classes if config else 8
+        self.num_classes = num_features
 
         self.classifier = nn.Linear(input_dim, self.num_classes)
         self.to(self.device)
@@ -44,7 +44,7 @@ class MultiLabelProbe(nn.Module):
             self,
             input_dim: int,
             config: Optional[LinguisticProbesConfig] = None,
-            # num_features: int = 12,
+            num_features: int = 12,
             # hidden_dim: int = 128,
             # lr: float = 1e-3,
             # epochs: int = 3,
@@ -59,7 +59,7 @@ class MultiLabelProbe(nn.Module):
         self.device = config.device if config else 'cpu'
         self.epochs = config.epochs if config else 3
         self.lr = config.lr if config else 1e-3
-        self.num_features = config.num_classes if config else 8
+        self.num_features = num_features
         self.class_weights = None
         self.input_dim = input_dim
         self.hidden_dim = config.hidden_dim if config else 128

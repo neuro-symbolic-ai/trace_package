@@ -12,6 +12,8 @@ class LinguisticProbesConfig:
     input_dim: int = None  # Input dimension for the probe (e.g., BERT hidden size)
     probe_type: str = "multilabel"  # 'linear' or 'multilabel'
     num_classes: int = 8  # Number of classes for classification probes
+    num_pos_classes: int = 8  # Number of POS classes (for basic granularity)
+    num_semantic_classes: int = 8  # Number of semantic classes (for basic granularity)
     hidden_dim: int = 128  # Hidden dimension for MLP probes
     lr: float = 0.001  # Learning rate for training probes
     dropout: float = 0.1  # Dropout rate for MLP probes

@@ -18,6 +18,12 @@ class ProbeTrainer:
         self.config = config
         self.tokenizer = tokenizer
         self.device = config.device or ("cuda" if torch.cuda.is_available() else "cpu")
+        # updating the number of classes based on the config
+        if config.track_pos:
+            config.num_pos_classes = len(config.get_pos_categories())
+        if config.track_semantic:
+            config.num_semantic_classes = len(config.get_semantic_categories())
+
 
         # Create output directories
         if config.save_path:
@@ -124,13 +130,19 @@ class ProbeTrainer:
 
         # Get probe configuration
         input_dim = hidden_states.shape[2]
-        num_features = labels.shape[1]
+        if probe_type == 'pos':
+            num_features = self.config.num_pos_classes
+        elif probe_type == 'semantic':
+            num_features = self.config.num_semantic_classes
+        else:
+            raise ValueError(f"Unknown probe type: {probe_type}")
+
 
         # Create probe model
         if self.config.probe_type == "multilabel":
-            probe = MultiLabelProbe(input_dim=input_dim, config=self.config)
+            probe = MultiLabelProbe(input_dim=input_dim, config=self.config, num_features=num_features)
         else:
-            probe = LinearProbe(input_dim=input_dim, config=self.config)
+            probe = LinearProbe(input_dim=input_dim, config=self.config, num_features=num_features)
 
         # Prepare dataset
         probe_loader = prepare_probing_dataset(
