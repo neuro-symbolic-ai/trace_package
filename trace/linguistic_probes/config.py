@@ -196,7 +196,7 @@ class LinguisticProbesConfig:
                 "PREP": 10,
                 "RESULT": 11,
                 "CONJ": 12,
-                "OTHER": 13
+                # "OTHER": 13
             }
         # todo: elif 'nltk:
 
