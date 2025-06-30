@@ -245,3 +245,68 @@ class TrainingConfig:
             os.makedirs(self.plots_path, exist_ok=True)
         # Create save directory
         os.makedirs(os.path.dirname(self.save_path), exist_ok=True)
+
+    def get_pos_categories(self) -> Dict[str, int]:
+        """Get POS categories based on granularity setting."""
+        if self.pos_granularity == 'basic':
+            return {
+                "NOUN": 0,
+                "VERB": 1,
+                "ADJ": 2,
+                "ADV": 3,
+                "PREP": 4,
+                "CONJ": 5,
+                "OTHER": 6,
+                # "DET": 5,
+            }
+        elif self.pos_granularity == 'detailed':  # detailed
+            return {
+                "NOUN": 0,
+                "TRANSITIVE_VERB": 1,
+                "INTRANSITIVE_VERB": 2,
+                "COMMUNICATION_VERB": 3,
+                "MOTION_VERB": 4,
+                "CHANGE_VERB": 5,
+                "ADJ": 6,
+                "ADV": 7,
+                "LOCATION": 8,
+                "TEMP": 9,
+                "PREP": 10,
+                "RESULT": 11,
+                "CONJ": 12,
+                # "OTHER": 13
+            }
+        # todo: elif 'nltk:
+
+    def get_semantic_categories(self) -> Dict[str, int]:
+        """Get semantic categories based on granularity setting."""
+        if self.semantic_granularity == 'basic':
+            return {
+                "AGENT": 0,
+                "PATIENT": 1,
+                "ACTION": 2,
+                "LOCATION": 3,
+                "RELATION": 4,
+                "CONNECTOR": 5,
+                "RESULT": 6,
+                "OTHER": 7
+            }
+        elif self.semantic_granularity == 'detailed':
+            return {
+                "AGENT": 0,
+                "PATIENT": 1,
+                "ACTION": 2,
+                "MOTION": 3,
+                "COMMUNICATION": 4,
+                "CHANGE": 5,
+                "LOCATION": 6,
+                "DESTINATION": 7,
+                "TIME": 8,
+                "RESULT": 9,
+                "PROPERTY": 10,
+                "MANNER": 11,
+                "RELATION": 12,
+                "CONNECTOR": 13,
+                "OTHER": 14
+            }
+        # todo: elif 'nltk:
