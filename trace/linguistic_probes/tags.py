@@ -135,9 +135,9 @@ class POSTagSet(BaseTagSet):
                 "ADJ": 2,
                 "ADV": 3,
                 "PREP": 4,
-                "DET": 5,
-                "CONJ": 6,
-                "OTHER": 7
+                "CONJ": 5,
+                "OTHER": 6,
+                # "DET": 5,
             }
         else:  # detailed
             return {
