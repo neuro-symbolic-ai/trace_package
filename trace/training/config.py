@@ -98,11 +98,11 @@ class TrainingConfig:
 
     # POS tracking
     track_pos_performance: bool = True
-    pos_granularity: str = 'basic'
+    pos_granularity: str = 'detailed'
 
     # Semantic role tracking
     track_semantic_roles_performance: bool = False
-    semantic_granularity: str = 'basic'
+    semantic_granularity: str = 'detailed'
 
     # Device and reproducibility
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
