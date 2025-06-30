@@ -107,7 +107,7 @@ class POSTagger(BaseTagger):
                 "PREP": "PREP",
                 "RESULT": "NOUN",
                 "CONJ": "CONJ",
-                # "DET": "DET",
+                "DET": "DET",
                 "OTHER": "OTHER"
             }
         elif granularity == 'detailed':
@@ -125,7 +125,7 @@ class POSTagger(BaseTagger):
                 "PREP": "PREP",
                 "RESULT": "RESULT",
                 "CONJ": "CONJ",
-                # "DET": "DET",
+                "DET": "DET",
                 "OTHER": "OTHER"
             }
         elif granularity == 'custom':
