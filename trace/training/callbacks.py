@@ -159,6 +159,9 @@ class TrainingCallbacks:
         if self.config.track_semantic_probes:
             print("Setting up semantic probes analyzer...")
             self.config.semantic_probe_num_features = len(self.config.get_semantic_categories())
+            print(f"Number of semantic features: {self.config.semantic_probe_num_features}")
+            print(f"Semantic probe type: {self.config.semantic_probe_type}")
+            print(f"semantic_granularity: {self.config.semantic_granularity}")
             semantic_config = LinguisticProbesConfig(
                 probe_type=self.config.semantic_probe_type,
                 layer_indices=self.config.semantic_probe_layers,
