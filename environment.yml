@@ -15,11 +15,11 @@ dependencies:
   - notebook
   - ipykernel
   - numba
-  - scikit-dimension
   - pip:
       - git+https://github.com/nura-j/ABSynth_dataset.git
       - transformers
       - torch
       - huggingface-hub
+      - scikit-dimension
       - hf-xet
       - tqdm
