@@ -30,7 +30,6 @@ conda activate trace
 pip install .
 ```
 
-
 ### Basic Usage
 
 ```python
