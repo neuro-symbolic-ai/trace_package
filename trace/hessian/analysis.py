@@ -64,8 +64,6 @@ class HessianAnalyzer:
                 )
                 results["components"] = component_results
                 print("Component-specific Hessian analysis completed.")
-                # print("Component-specific Hessian analysis completed.")
-                # print(f"Component results: {component_results}")
 
             # Gradient-Hessian alignment analysis
             if self.config.track_gradient_alignment:

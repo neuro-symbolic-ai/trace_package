@@ -52,12 +52,8 @@ class HessianVisualizer:
             print("No Hessian history to plot")
             return
 
-
         # Extract and sort steps
         steps = sorted([int(step) for step in hessian_history.keys()])
-        # print(f"Plotting eigenvalue evolution for {model_name} at steps: {steps}")
-        # print(f'Hessian history keys: {list(hessian_history.keys())}')
-        # print(f'Hessian history: {hessian_history}')
         # Extract metrics
         max_eigs = [hessian_history[step]["hessian"]["max_eigenvalue"] for step in steps]
         min_eigs = [hessian_history[step]["hessian"]["min_eigenvalue"] for step in steps]
@@ -109,10 +105,6 @@ class HessianVisualizer:
         if self.config.show_plots:
             plt.show()
         plt.close()
-
-        # Create eigenvalue heatmap
-        # HessianVisualizer._plot_eigenvalue_heatmap(hessian_history, steps, save_path, model_name)
-
 
     def plot_eigenvalue_heatmap(
             self,
@@ -271,24 +263,11 @@ class HessianVisualizer:
             save_path: Path to save plots
             model_name: Model name for plot titles and filenames
         """
-        # if not component_history:
-        #     print("No component history to plot")
-        #     return
-        # We will work with hessian history of components, which is a dictionar
-        # its keys are the steps
         # each step contains a dictionary with component names as keys and its values are dictionaries with metrics for each component
         steps = sorted(list(hessian_history.keys()))
         components = hessian_history[steps[0]]['components'].keys()
         print(f"Plotting component comparison for {model_name} at steps: {steps}")
-        print(f"Component names: {components}")
-
-        # components = list(component_history.keys())
-        # common_steps = HessianVisualizer._find_common_steps(component_history)
-
-        # if not common_steps:
-        #     print("No common steps found across components")
-        #     return
-
+        # print(f"Component names: {components}")
         colors = plt.cm.tab20(np.linspace(0, 1, len(components)))
         plt.style.use('seaborn-v0_8-whitegrid')
 
@@ -674,22 +653,3 @@ class HessianVisualizer:
                         f.write(f"  Max Eigenvalue: {comp_data.get('max_eigenvalue', 'N/A'):.2e}\n")
                         f.write(f"  Parameters: {comp_data.get('num_params', 'N/A')}\n")
                 f.write("\n")
-
-
-# Legacy compatibility functions for pre_training.py
-# def plot_hessian_evolution(hessian_history, alignment_history=None, plots_path=None, model_name=''):
-#     """Legacy wrapper for hessian evolution plotting."""
-#     HessianVisualizer.plot_eigenvalue_evolution(hessian_history, plots_path, model_name)
-#
-#     if alignment_history:
-#         HessianVisualizer.plot_gradient_alignment(alignment_history, plots_path, model_name)
-#
-#
-# def plot_component_comparison(component_history, plots_path=None, model_name=""):
-#     """Legacy wrapper for component comparison plotting."""
-#     HessianVisualizer.plot_component_comparison(component_history, plots_path, model_name)
-#
-#
-# def plot_train_val_landscape_divergence_metrics(memorization_history, plots_path=None, model_name=""):
-#     """Legacy wrapper for memorization metrics plotting."""
-#     HessianVisualizer.plot_memorization_metrics(memorization_history, plots_path, model_name)

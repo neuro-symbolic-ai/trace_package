@@ -26,9 +26,4 @@ __all__ = [
 
     # Detailed functions
     'compute_component_hessians',
-
-    # Visualization functions
-    # 'plot_hessian_evolution',
-    # 'plot_component_comparison',
-    # 'plot_train_val_landscape_divergence_metrics'
 ]
