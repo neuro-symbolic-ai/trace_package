@@ -71,6 +71,7 @@ class TrainingConfig:
     probe_input_dim: int = 64  # Input dimension for the probe
     probe_load_paths: Optional[Dict[Tuple[int, str], str]] = None # Path to load existing probes if needed key is layer name, value is path
     probe_num_features: int = 8
+    probe_tag_level = 'basic'  # 'basic' or 'detailed'
     probe_hidden_dim: int = 256
     probe_lr: float = 0.001
     probe_epochs: int = 10
@@ -87,6 +88,7 @@ class TrainingConfig:
     semantic_probe_hidden_dim: int = 256
     semantic_probe_lr: float = 0.001
     semantic_probe_epochs: int = 10
+    semantic_probe_tag_level = 'basic'  # 'basic' or 'detailed'
     semantic_probe_type: str = "multilabel"  # 'linear' or 'multilabel'
     rand_init_semantic_probes: bool = False  # Whether to initialize semantic probes randomly
     train_semantic_probes: bool = False  # Whether to train semantic probes
@@ -98,7 +100,7 @@ class TrainingConfig:
 
     # POS tracking
     track_pos_performance: bool = True
-    pos_granularity: str = 'detailed'
+    pos_granularity: str = 'basic'
 
     # Semantic role tracking
     track_semantic_roles_performance: bool = False
@@ -248,7 +250,7 @@ class TrainingConfig:
 
     def get_pos_categories(self) -> Dict[str, int]:
         """Get POS categories based on granularity setting."""
-        if self.pos_granularity == 'basic':
+        if self.probe_tag_level == 'basic':
             return {
                 "NOUN": 0,
                 "VERB": 1,
@@ -259,7 +261,7 @@ class TrainingConfig:
                 "OTHER": 6,
                 # "DET": 5,
             }
-        elif self.pos_granularity == 'detailed':  # detailed
+        elif self.probe_tag_level == 'detailed':  # detailed
             return {
                 "NOUN": 0,
                 "TRANSITIVE_VERB": 1,
@@ -280,7 +282,7 @@ class TrainingConfig:
 
     def get_semantic_categories(self) -> Dict[str, int]:
         """Get semantic categories based on granularity setting."""
-        if self.semantic_granularity == 'basic':
+        if self.semantic_probe_tag_level == 'basic':
             return {
                 "AGENT": 0,
                 "PATIENT": 1,
@@ -291,7 +293,7 @@ class TrainingConfig:
                 "RESULT": 6,
                 "OTHER": 7
             }
-        elif self.semantic_granularity == 'detailed':
+        elif self.semantic_probe_tag_level == 'detailed':
             return {
                 "AGENT": 0,
                 "PATIENT": 1,
