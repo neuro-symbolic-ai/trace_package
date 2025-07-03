@@ -70,7 +70,7 @@ class MultiLabelProbe(nn.Module):
         self.lr = config.lr if config else 1e-3
         if self.linguistic_target == 'pos':
             self.num_features = config.num_pos_classes if config else num_features
-        elif self.linguistic_target == 'semantic_roles':
+        elif self.linguistic_target == 'semantic':
             self.num_features = config.num_semantic_classes if config else num_features
         else:
             # Default to num_features if no specific target is set
