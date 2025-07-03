@@ -24,7 +24,6 @@ class ProbeTrainer:
         if config.track_semantic:
             config.num_semantic_classes = len(config.get_semantic_categories())
 
-
         # Create output directories
         if config.save_path:
             os.makedirs(config.save_path, exist_ok=True)

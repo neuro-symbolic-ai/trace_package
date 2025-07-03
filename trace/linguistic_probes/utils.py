@@ -63,23 +63,6 @@ def extract_hidden_representations_with_pos_semantic(
         for idx in indices:
             hidden_dict[(idx, layer_type)] = []
 
-        # layer_indices = [0]
-        # if model.model_type == 'encoder_only' and hasattr(model.encoder, 'layers'):
-        #     # layer_indices = list(range(len(model.encoder.layers)))
-        #     hidden_dict = {i: [] for i in layer_indices}
-        #     hidden_dict = {(i, 'encoder'): [] for i in layer_indices}
-        # elif model.model_type == 'decoder_only' and hasattr(model.decoder, 'layers'):
-        #     layer_indices = list(range(len(model.decoder.layers)))
-        #     # hidden_dict = {i: [] for i in layer_indices}
-        #     hidden_dict = {(i, 'decoder'): [] for i in layer_indices}
-        # elif model.model_type == 'encoder_decoder':
-        #     layer_indices_decoder = list(range(len(model.decoder.layers)))
-        #     layer_indices_encoder = list(range(len(model.encoder.layers))) # todo fix this for encoder-decoder models
-        #     layer_indices = {'decoder':layer_indices_decoder, 'encoder':layer_indices_encoder} # todo: a better way to handle this is to cover layer indices to dict
-        #     hidden_dict = {(i, 'decoder'): [] for i in layer_indices_decoder}
-        #     hidden_dict.update({(i, 'encoder'): [] for i in layer_indices_encoder})
-
-
     pos_labels = []
     semantic_labels = []
 
@@ -136,8 +119,6 @@ def extract_hidden_representations_with_pos_semantic(
             input_ids = batch["input_ids"].to(device)
             print(f"Input IDs shape: {input_ids.shape}")
             attention_mask = batch.get('attention_mask', None)
-            # if attention_mask is not None:
-            #     attention_mask = attention_mask.to(device)
 
             # Create labels if tokenizer is provided
             if tokenizer is not None:
@@ -158,12 +139,6 @@ def extract_hidden_representations_with_pos_semantic(
             elif model.model_type == 'encoder_decoder':
                 # Forward pass for encoder
                 _ = model(src=input_ids, tgt=input_ids)  # Assuming src and tgt are the same for simplicity
-            # # Forward pass to trigger hooks
-            # if attention_mask is not None:
-            #     # _ = model(input_ids, attention_mask=attention_mask)
-            #     _ = model(tgt=input_ids) # todo fix this for encoder-decoder models and encoder-only models
-            # else:
-            #     _ = model(tgt=input_ids)
 
     # Clean up hooks
     for handle in handles:

@@ -26,9 +26,9 @@ class LinearProbe(nn.Module):
         self.device = config.device if config else "cpu"
         self.linguistic_target = linguistic_target
         if self.linguistic_target == 'pos':
-            num_features = config.num_pos_classes if config else num_features
+            self.num_classes = config.num_pos_classes if config else num_features
         elif self.linguistic_target == 'semantic_roles':
-            num_features = config.num_semantic_classes if config else num_features
+            self.num_classes = config.num_semantic_classes if config else num_features
         else:
             self.num_classes = num_features
 
@@ -53,12 +53,6 @@ class MultiLabelProbe(nn.Module):
             config: Optional[LinguisticProbesConfig] = None,
             num_features: int = 12,
             linguistic_target: Optional[str] = None,
-            # hidden_dim: int = 128,
-            # lr: float = 1e-3,
-            # epochs: int = 3,
-            # device: str = "cpu",
-            # dropout: float = 0.5,
-
     ):
         """
         Initialize multi-label probe.
