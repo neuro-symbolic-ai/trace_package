@@ -61,7 +61,7 @@ class OutputMonitoringVisualizer:
             print("No POS accuracy data available for plotting")
             return
 
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize=(8, 4))
 
         # Get all POS categories
         all_pos_tags = set()
@@ -87,9 +87,9 @@ class OutputMonitoringVisualizer:
                          marker='o', linestyle='-', linewidth=2, markersize=6,
                          color=color, label=pos_tag, alpha=0.8)
 
-        plt.xlabel('Training Step', fontsize=12)
-        plt.ylabel('POS Accuracy', fontsize=12)
-        plt.title(f'POS Accuracy Evolution During Training ({model_name})', fontsize=14)
+        plt.xlabel('Training Step', fontsize=16)
+        plt.ylabel('POS Accuracy', fontsize=16)
+        plt.title(f'POS Accuracy Evolution During Training ({model_name})', fontsize=16)
         plt.grid(True, alpha=0.3)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.ylim(0, 1.1)
@@ -126,7 +126,7 @@ class OutputMonitoringVisualizer:
             print("No semantic accuracy data available for plotting")
             return
 
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize=(8, 4))
 
         # Get all semantic categories
         all_semantic_tags = set()
@@ -152,9 +152,9 @@ class OutputMonitoringVisualizer:
                          marker='s', linestyle='-', linewidth=2, markersize=6,
                          color=color, label=semantic_tag, alpha=0.8)
 
-        plt.xlabel('Training Step', fontsize=12)
-        plt.ylabel('Semantic Role Accuracy', fontsize=12)
-        plt.title(f'Semantic Role Accuracy Evolution During Training ({model_name})', fontsize=14)
+        plt.xlabel('Training Step', fontsize=16)
+        plt.ylabel('Semantic Role Accuracy', fontsize=16)
+        plt.title(f'Semantic Role Accuracy Evolution During Training ', fontsize=16)
         plt.grid(True, alpha=0.3)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.ylim(0, 1.1)
