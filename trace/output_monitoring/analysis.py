@@ -9,7 +9,6 @@ from ..linguistic_probes import POSTagger, SemanticTagger
 class OutputMonitoringAnalyzer:
     """
     Class for analyzing output monitoring of transformer models.
-    todo: should I change this to an interface? like probes?
     """
 
     def __init__(self, config: Optional[OutputMonitoringConfig] = None):
