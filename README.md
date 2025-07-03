@@ -19,7 +19,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/nura-j/trace_package.git
+git clone https://github.com/neuro-symbolic-ai/trace_package.git
 cd trace_package
 
 # [Optional] create and activate the conda environment
