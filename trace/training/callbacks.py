@@ -130,10 +130,6 @@ class TrainingCallbacks:
             print("Setting up linguistic probes analyzer...")
             # Determine number of POS categories
             self.config.probe_num_features = len(self.config.get_pos_categories())
-            print(f"Number of POS features: {self.config.probe_num_features}")
-            print(f"POS probe type: {self.config.probe_type}")
-            print(f"POS granularity: {self.config.probe_tag_level}")
-
             probe_config = LinguisticProbesConfig(
                 probe_type=self.config.probe_type,
                 layer_indices=self.config.probe_layers,
@@ -164,9 +160,6 @@ class TrainingCallbacks:
         if self.config.track_semantic_probes:
             print("Setting up semantic probes analyzer...")
             self.config.semantic_probe_num_features = len(self.config.get_semantic_categories())
-            print(f"Number of semantic features: {self.config.semantic_probe_num_features}")
-            print(f"Semantic probe type: {self.config.semantic_probe_type}")
-            print(f"semantic_granularity: {self.config.semantic_probe_tag_level}")
             semantic_config = LinguisticProbesConfig(
                 probe_type=self.config.semantic_probe_type,
                 layer_indices=self.config.semantic_probe_layers,
@@ -188,7 +181,6 @@ class TrainingCallbacks:
             else:
                 print("Warning: No semantic probe paths provided - analysis will run rand probes")
                 self.probe_semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
-                # self.probe_semantic_analyzer = None  # Set to None if no probes are loaded
         else:
             self.probe_semantic_analyzer = None
 
@@ -218,7 +210,6 @@ class TrainingCallbacks:
                 log_dir=self.config.log_dir,
             )
             self.hessian_analyzer = HessianAnalyzer(hessian_config)
-            print("Hessian analysis will be added when module is refactored")
         else:
             self.hessian_analyzer = None
 
@@ -233,13 +224,11 @@ class TrainingCallbacks:
                 device=self.device
             )
             self.pos_tracker = OutputMonitoringAnalyzer(pos_performance_config)
-            print("POS performance tracking will be added later")
         else:
             self.pos_tracker = None
 
         # Semantic Role Tracker
         if self.config.track_semantic_roles_performance:
-            print("Semantic role tracking will be added later")
             semantic_performance_config = OutputMonitoringConfig(
                 model_type=self.config.model_type,
                 track_pos_performance=False,  # Not used here
@@ -251,8 +240,6 @@ class TrainingCallbacks:
             self.semantic_role_tracker = OutputMonitoringAnalyzer(semantic_performance_config)
         else:
             self.semantic_role_tracker = None
-
-            # TODO: Add other analyzers when refactored
 
     def _setup_tracking_data(self):
         """Initialize data structures for tracking results."""
@@ -516,8 +503,6 @@ class TrainingCallbacks:
             except Exception as e:
                 print(f"Failed to generate Hessian visualizations: {e}")
 
-
-
         # Generate gradient visualizations
         if self.config.track_gradients and self.analysis_results['grad_similarities_history']:
             try:
@@ -528,24 +513,6 @@ class TrainingCallbacks:
                 print(f"Failed to generate gradient visualizations: {e}")
 
         print("Final visualizations completed!")
-
-    # def _convert_to_evolution_format(self, step_results: Dict[int, Dict]) -> Dict:
-    #     """
-    #     Convert step-wise results to evolution format for plotting.
-    #
-    #     Args:
-    #         step_results: Dictionary mapping steps to analysis results
-    #
-    #     Returns:
-    #         Dictionary in evolution format for visualization
-    #     """
-    #     evolution_data = defaultdict(list)
-    #
-    #     for step, results in step_results.items():
-    #         for layer_key, value in results.items():
-    #             evolution_data[layer_key].append((step, value))
-    #
-    #     return dict(evolution_data)
 
     def get_analysis_summary(self) -> Dict[str, Any]:
         """

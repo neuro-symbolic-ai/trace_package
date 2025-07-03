@@ -35,11 +35,12 @@ class Trainer:
             model: Optional pre-initialized model
         """
         self.config = config
+        set_seed(config.seed)
         self.tokenizer = tokenizer
         self.model = model
 
         # Set up device and reproducibility
-        set_seed(config.seed)
+
         self.device = config.device
 
         # Create necessary directories
@@ -88,20 +89,6 @@ class Trainer:
             optimizer_kwargs["weight_decay"] = self.config.weight_decay
 
         self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
-        print('=== OPTIMIZER SETUP ===')
-        print(f"Optimizer type: {type(self.optimizer).__name__}")
-        print(f"Learning rate: {self.config.learning_rate}")
-        print(f"Weight decay: {self.config.weight_decay}")
-
-        # print(f"Number of model parameters: {sum(p.numel() for p in self.model.parameters())}")
-        # print(
-        #     f"Number of optimizer parameters: {sum(p.numel() for g in self.optimizer.param_groups for p in g['params'])}")
-        # for name, param in self.model.named_parameters():
-        #     if param.requires_grad and not any(param is p for g in self.optimizer.param_groups for p in g['params']):
-        #         print(f"[!] Parameter {name} missing from optimizer.")
-
-
-
         # Set up learning rate scheduler if warmup is requested
         if self.config.warmup_steps:
             print('passing warmup steps')
@@ -133,11 +120,6 @@ class Trainer:
         Returns:
             Tuple of (best_validation_loss, analysis_results)
         """
-        # Set model if provided
-        # if model is not None:
-        #     self.model = model
-        # else:
-        #     raise ValueError("No model provided for training")
 
         # Move model to device
         self.model.to(self.device)
@@ -150,16 +132,6 @@ class Trainer:
         print(f"Task mode: {self.config.task_mode}")
         print(f"Device: {self.device}")
         print(f"Model: {self.model}")
-
-        # # Print model summary
-        # batch = next(iter(train_loader))
-        # print("Tokenized input:", self.tokenizer.encode("Translate: John eats"))
-        #
-        # print("First batch (input_ids):")
-        # for i in range(3):
-        #     print(batch["input_ids"][i].tolist())
-        #
-        # print("Seed check:", random.getstate()[1][0])
 
         # Main training loop
         for epoch in range(self.config.epochs):
@@ -226,17 +198,6 @@ class Trainer:
         self.model.train()
         total_train_loss = 0
         epoch_steps = 0
-        print(f"=== TRAINING CONFIG ===")
-        print(f"Learning rate: {self.config.learning_rate}")
-        print(f"Batch size: {self.config.batch_size}")
-        print(f"Warmup steps: {self.config.warmup_steps}")
-        print(f"Weight decay: {self.config.weight_decay}")
-        print(f"Dropout: {self.config.dropout}")
-        print(f"Model d_model: {self.model.d_model}")
-        print(f"Model num_heads: {self.model.num_heads}")
-
-
-
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch + 1}")
 
         for batch in progress_bar:
@@ -256,32 +217,8 @@ class Trainer:
                 outputs, labels_info["labels"],
                 self.criterion,
             )
-            # print("Logits:", outputs.shape, "min", outputs.min().item(), "max", outputs.max().item())
-            # print("Labels:", labels_info["labels"].shape, labels_info["labels"].dtype)
-            # print("Loss:", loss.item())
-            # exit(0)
             # Backward pass
             loss.backward()
-            # print("=== OPTIMIZER STATE ===")
-            # print("Optimizer type:", type(self.optimizer))
-            # print("Learning rate:", self.optimizer.param_groups[0]['lr'])
-            # print("Weight decay:", self.optimizer.param_groups[0].get('weight_decay', 'None'))
-            # print("Optimizer param groups:", len(self.optimizer.param_groups))
-            # exit(1)
-            # print("Batch keys:", batch.keys())
-            # print("Input shape:", batch["input_ids"].shape)
-            # print("Input sample:", batch["input_ids"][0][:10])
-            # print("Labels sample:", batch["labels"][0][:10])
-            # print("Attention mask sample:", batch["attention_mask"][0][:10])
-            # print(f"Step {self.step_counter}: Loss = {loss.item():.6f}")
-            # for name, param in self.model.named_parameters():
-            #     if param.grad is not None:
-            #         grad_norm = param.grad.norm().item()
-            #         print(f"  {name}: grad_norm = {grad_norm:.6f}")
-            #     else:
-            #         print(f"  {name}: NO GRADIENT")
-            # exit(1)
-            # predictions = torch.argmax(outputs, dim=-1).cpu()
             # Run analysis if needed (before optimizer step to capture gradients)
             if self.callbacks.should_track(self.step_counter):
                 self.callbacks.run_analysis(
@@ -358,22 +295,6 @@ class Trainer:
             tokenizer=self.tokenizer,
             ignore_index=self.config.ignore_index,
         )
-        #
-        # test_loss = validate_model(
-        #     self.model, test_loader, self.criterion,
-        #     self.device, self.config.model_type, self.config.task_mode
-        # )
-        #
-        # # Placeholder for other metrics
-        # metrics = {
-        #     "test_loss": test_loss,
-        #     "exact_match": 0.0,  # TODO: Implement
-        #     "token_accuracy": 0.0,  # TODO: Implement
-        #     "bleu_score": 0.0,  # TODO: Implement
-        #     "perplexity": math.exp(test_loss)
-        # }
-        #
-        # return metrics
 
     def _log_test_metrics(self, test_metrics: Dict[str, float], epoch: int):
         """
