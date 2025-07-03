@@ -129,10 +129,10 @@ class BaseAnalyzer:
                 probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
             else:
                 probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
-            print(f"Loading {self.get_analysis_type()} probe for layer {layer_key} from {probe_info['path']}")
-            print(f'Config: {self.config}')
-            print(f'Probe {probe}')
-            input("Press Enter to continue...")  # Debug pause
+            # print(f"Loading {self.get_analysis_type()} probe for layer {layer_key} from {probe_info['path']}")
+            # print(f'Config: {self.config}')
+            # print(f'Probe {probe}')
+            # input("Press Enter to continue...")  # Debug pause
             # Load trained weights
 
             probe.load(probe_info['path'])
