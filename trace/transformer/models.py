@@ -354,24 +354,5 @@ class Transformer(nn.Module):
         else:
             return f"{param_count} parameters"
 
-    # def load_state_dict(
-    #     self, state_dict: Mapping[str, Any], strict: bool = True, assign: bool = False
-    # ):
-    #     """
-    #     Load state dictionary into the model.
-    #
-    #     Args:
-    #         state_dict: State dictionary to load
-    #         strict: Whether to enforce strict loading
-    #         assign: Whether to assign state_dict directly
-    #
-    #     Returns:
-    #         None
-    #     """
-    #     if assign:
-    #         self.__dict__.update(state_dict) # add check point and use only state_dict
-    #     else:
-    #         super().load_state_dict(state_dict, strict=strict)
-
 
 

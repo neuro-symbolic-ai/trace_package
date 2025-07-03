@@ -101,8 +101,8 @@ training_config = TrainingConfig(
     track_intrinsic_dimensions=False,  # Representation dimensionality
     track_pos_performance=False,  # Output POS accuracy
     track_semantic_roles_performance=False,  # Output semantic accuracy
-    #probe_load_paths=probe_paths,
-    #semantic_probe_load_path=semantic_probe_paths,
+    probe_load_paths=probe_paths,
+    semantic_probe_load_path=semantic_probe_paths,
 
     # Analysis frequency and visualization
     track_interval=500,  # Analyze every 100 steps
@@ -931,13 +931,4 @@ This generates synthetic corpora optimized for transformer analysis with control
 
 ##  License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Citation
-
-If you use trace in your research, please cite:
-
-```bibtex
-@software{...
-}
-```
+This project is licensed under the  licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details.
