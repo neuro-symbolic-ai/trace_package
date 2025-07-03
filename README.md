@@ -104,7 +104,7 @@ training_config = TrainingConfig(
     semantic_probe_load_path=semantic_probe_paths,
 
     # Analysis frequency and visualization
-    track_interval=500,  # Analyze every 100 steps
+    track_interval=500,  # Analyze every 500 steps
     save_visualization=True,  # Generate plots
     plots_path="./analysis_results"  # Save results here
 )

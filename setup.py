@@ -37,7 +37,9 @@ setup(
         'trace.intrisic_dimensions',
         'trace.tokenizer',
         'trace.utils',
-        'trace.dataloader'
+        'trace.dataloader',
+        'trace.training'
+        'trace.output_monitoring'
     ],
     url='https://github.com/nura-j/trace_package',
     license='GPLv3',
