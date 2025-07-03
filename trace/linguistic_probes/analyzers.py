@@ -82,9 +82,9 @@ class BaseAnalyzer:
             return self.loaded_probes[layer_key]['probe']
         try:
             if self.config.probe_type == "multilabel":
-                probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
+                probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=self.get_analysis_type())
             else:
-                probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
+                probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=self.get_analysis_type())
 
             # Move to device and set to evaluation mode
             probe.to(self.device)
@@ -126,9 +126,9 @@ class BaseAnalyzer:
         try:
             # Create probe model
             if self.config.probe_type == "multilabel":
-                probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
+                probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=self.get_analysis_type())
             else:
-                probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
+                probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=self.get_analysis_type())
             print(f"Loading {self.get_analysis_type()} probe for layer {layer_key} from {probe_info['path']}")
             print(f'Config: {self.config}')
             print(f'Probe {probe}')
