@@ -36,7 +36,7 @@ setup(
     packages=['trace', 'trace.hessian', 'trace.transformer', 'trace.linguistic_probes',
               'trace.intrisic_dimensions', 'trace.tokenizer', 'trace.utils', 'trace.dataloader'],
     url='',
-    license='',
+    license='GPLv3',
     author='nura_aljaafari',
     author_email='nuraaljaafari@gmail.com',
     description='',
