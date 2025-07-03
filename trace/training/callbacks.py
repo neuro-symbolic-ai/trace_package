@@ -139,7 +139,8 @@ class TrainingCallbacks:
                 epochs=self.config.probe_epochs,
                 log_dir=self.config.log_dir,
                 save_visualizations=True,
-                device=self.device
+                device=self.device,
+                pos_granularity= self.config.pos_granularity,
             )
             self.probe_pos_linguistic_analyzer = POSAnalyzer(probe_config)
             # Load pre-trained probes if paths provided
@@ -167,7 +168,8 @@ class TrainingCallbacks:
                 epochs=self.config.semantic_probe_epochs,
                 log_dir=self.config.log_dir,
                 save_visualizations=self.config.save_visualization,
-                device=self.device
+                device=self.device,
+                semantic_granularity=self.config.semantic_granularity,
             )
             self.probe_semantic_analyzer = SemanticAnalyzer(semantic_config)
             # Load pre-trained probes if paths provided
