@@ -142,6 +142,7 @@ class TrainingCallbacks:
                 save_visualizations=True,
                 device=self.device,
                 pos_granularity= self.config.probe_tag_level,
+                show_plots=self.config.show_plots,
             )
             self.probe_pos_linguistic_analyzer = POSAnalyzer(probe_config)
             # Load pre-trained probes if paths provided
@@ -172,6 +173,7 @@ class TrainingCallbacks:
                 save_visualizations=self.config.save_visualization,
                 device=self.device,
                 semantic_granularity=self.config.semantic_probe_tag_level,
+                show_plots=self.config.show_plots,
             )
             self.probe_semantic_analyzer = SemanticAnalyzer(semantic_config)
             # Load pre-trained probes if paths provided
@@ -191,7 +193,8 @@ class TrainingCallbacks:
                 model_type=self.config.model_type,
                 layers_to_analyze=self.config.id_selected_layers,  # Use same layers as probes
                 id_method=self.config.id_method,
-                log_dir=self.config.log_dir
+                log_dir=self.config.log_dir,
+                show_plots=self.config.show_plots,
             )
             self.intrinsic_analyzer = IntrinsicDimensionAnalyzer(id_config)
         else:
@@ -208,6 +211,7 @@ class TrainingCallbacks:
                 save_hessian_data=self.config.save_hessian_data,
                 loss_fn=self.config.hessian_loss_fn,
                 log_dir=self.config.log_dir,
+                show_plots=self.config.show_plots,
             )
             self.hessian_analyzer = HessianAnalyzer(hessian_config)
         else:
@@ -221,7 +225,8 @@ class TrainingCallbacks:
                 pos_granularity=self.config.pos_granularity,
                 track_semantic_roles=False,  # Not used here
                 save_visualizations=self.config.save_visualization,
-                device=self.device
+                device=self.device,
+                show_plots=self.config.show_plots,
             )
             self.pos_tracker = OutputMonitoringAnalyzer(pos_performance_config)
         else:
@@ -235,7 +240,8 @@ class TrainingCallbacks:
                 track_semantic_roles=self.config.track_semantic_roles_performance,
                 semantic_granularity=self.config.semantic_granularity,
                 save_visualizations=self.config.save_visualization,
-                device=self.device
+                device=self.device,
+                show_plots=self.config.show_plots,
             )
             self.semantic_role_tracker = OutputMonitoringAnalyzer(semantic_performance_config)
         else:
