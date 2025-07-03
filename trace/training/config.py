@@ -71,7 +71,7 @@ class TrainingConfig:
     probe_input_dim: int = 64  # Input dimension for the probe
     probe_load_paths: Optional[Dict[Tuple[int, str], str]] = None # Path to load existing probes if needed key is layer name, value is path
     probe_num_features: int = 8
-    probe_tag_level = 'basic'  # 'basic' or 'detailed'
+    probe_tag_level: str = 'basic'   # 'basic' or 'detailed'
     probe_hidden_dim: int = 256
     probe_lr: float = 0.001
     probe_epochs: int = 10
@@ -88,7 +88,7 @@ class TrainingConfig:
     semantic_probe_hidden_dim: int = 256
     semantic_probe_lr: float = 0.001
     semantic_probe_epochs: int = 10
-    semantic_probe_tag_level = 'basic'  # 'basic' or 'detailed'
+    semantic_probe_tag_level: str = 'basic'  # 'basic' or 'detailed'
     semantic_probe_type: str = "multilabel"  # 'linear' or 'multilabel'
     rand_init_semantic_probes: bool = False  # Whether to initialize semantic probes randomly
     train_semantic_probes: bool = False  # Whether to train semantic probes
