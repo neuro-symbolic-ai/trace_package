@@ -38,7 +38,7 @@ setup(
         'trace.tokenizer',
         'trace.utils',
         'trace.dataloader',
-        'trace.training'
+        'trace.training',
         'trace.output_monitoring'
     ],
     url='https://github.com/nura-j/trace_package',
