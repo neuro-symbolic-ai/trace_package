@@ -138,6 +138,7 @@ class TrainingCallbacks:
                 probe_type=self.config.probe_type,
                 layer_indices=self.config.probe_layers,
                 num_classes=self.config.probe_num_features,
+                num_pos_classes=self.config.probe_num_features,  # Use same for POS
                 hidden_dim=self.config.probe_hidden_dim,
                 lr=self.config.probe_lr,
                 epochs=self.config.probe_epochs,
@@ -170,6 +171,7 @@ class TrainingCallbacks:
                 probe_type=self.config.semantic_probe_type,
                 layer_indices=self.config.semantic_probe_layers,
                 num_classes=self.config.semantic_probe_num_features,
+                num_semantic_classes=self.config.semantic_probe_num_features,  # Use same for semantic
                 hidden_dim=self.config.semantic_probe_hidden_dim,
                 lr=self.config.semantic_probe_lr,
                 epochs=self.config.semantic_probe_epochs,
