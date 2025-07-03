@@ -89,7 +89,7 @@ class OutputMonitoringVisualizer:
 
         plt.xlabel('Training Step', fontsize=16)
         plt.ylabel('POS Accuracy', fontsize=16)
-        plt.title(f'POS Accuracy Evolution During Training ({model_name})', fontsize=16)
+        plt.title(f'POS Accuracy Evolution During Training', fontsize=16)
         plt.grid(True, alpha=0.3)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.ylim(0, 1.1)
