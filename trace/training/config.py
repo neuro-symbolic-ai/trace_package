@@ -102,7 +102,7 @@ class TrainingConfig:
 
     # Semantic role tracking
     track_semantic_roles_performance: bool = False
-    semantic_granularity: str = 'detailed'
+    semantic_granularity: str = 'basic'
 
     # Device and reproducibility
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
