@@ -132,7 +132,7 @@ class TrainingCallbacks:
             self.config.probe_num_features = len(self.config.get_pos_categories())
             print(f"Number of POS features: {self.config.probe_num_features}")
             print(f"POS probe type: {self.config.probe_type}")
-            print(f"POS granularity: {self.config.pos_granularity}")
+            print(f"POS granularity: {self.config.probe_tag_level}")
 
             probe_config = LinguisticProbesConfig(
                 probe_type=self.config.probe_type,
@@ -144,7 +144,7 @@ class TrainingCallbacks:
                 log_dir=self.config.log_dir,
                 save_visualizations=True,
                 device=self.device,
-                pos_granularity= self.config.pos_granularity,
+                pos_granularity= self.config.probe_tag_level,
             )
             self.probe_pos_linguistic_analyzer = POSAnalyzer(probe_config)
             # Load pre-trained probes if paths provided
@@ -165,7 +165,7 @@ class TrainingCallbacks:
             self.config.semantic_probe_num_features = len(self.config.get_semantic_categories())
             print(f"Number of semantic features: {self.config.semantic_probe_num_features}")
             print(f"Semantic probe type: {self.config.semantic_probe_type}")
-            print(f"semantic_granularity: {self.config.semantic_granularity}")
+            print(f"semantic_granularity: {self.config.semantic_probe_tag_level}")
             semantic_config = LinguisticProbesConfig(
                 probe_type=self.config.semantic_probe_type,
                 layer_indices=self.config.semantic_probe_layers,
@@ -176,7 +176,7 @@ class TrainingCallbacks:
                 log_dir=self.config.log_dir,
                 save_visualizations=self.config.save_visualization,
                 device=self.device,
-                semantic_granularity=self.config.semantic_granularity,
+                semantic_granularity=self.config.semantic_probe_tag_level,
             )
             self.probe_semantic_analyzer = SemanticAnalyzer(semantic_config)
             # Load pre-trained probes if paths provided
