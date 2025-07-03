@@ -66,7 +66,7 @@ class BaseAnalyzer:
                 print(f"Failed to register probe for layer {layer_key}: {e}")
         self.use_random_probes = False
 
-    def _create_random_probe(self, layer_key: Union[int, tuple], input_dim: int) -> torch.nn.Module:
+    def _create_random_probe(self, layer_key: Union[int, tuple], input_dim: int, linguistic_target: Optional[str] = 'pos') -> torch.nn.Module:
         """
         Create a random probe for a layer when no pre-trained probe is available.
 
@@ -82,9 +82,9 @@ class BaseAnalyzer:
             return self.loaded_probes[layer_key]['probe']
         try:
             if self.config.probe_type == "multilabel":
-                probe = MultiLabelProbe(input_dim=input_dim, config=self.config)
+                probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
             else:
-                probe = LinearProbe(input_dim=input_dim, config=self.config)
+                probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
 
             # Move to device and set to evaluation mode
             probe.to(self.device)
@@ -98,7 +98,7 @@ class BaseAnalyzer:
             print(f"Failed to create random probe for layer {layer_key}: {e}")
             return None
 
-    def _load_probe_for_layer(self, layer_key: Union[int, tuple], input_dim: int) -> Optional[torch.nn.Module]:
+    def _load_probe_for_layer(self, layer_key: Union[int, tuple], input_dim: int, linguistic_target: Optional[str] = 'pos') -> Optional[torch.nn.Module]:
         """
         Load a specific probe for a layer when we know the input dimension.
 
@@ -111,7 +111,7 @@ class BaseAnalyzer:
         """
         # If using random probes, return rand probe
         if self.use_random_probes:
-            return self._create_random_probe(layer_key, input_dim)
+            return self._create_random_probe(layer_key, input_dim, linguistic_target=linguistic_target)
 
         if layer_key not in self.loaded_probes:
             print(f"No probe registered for layer {layer_key}")
@@ -126,9 +126,9 @@ class BaseAnalyzer:
         try:
             # Create probe model
             if self.config.probe_type == "multilabel":
-                probe = MultiLabelProbe(input_dim=input_dim, config=self.config)
+                probe = MultiLabelProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
             else:
-                probe = LinearProbe(input_dim=input_dim, config=self.config)
+                probe = LinearProbe(input_dim=input_dim, config=self.config, linguistic_target=linguistic_target)
             print(f"Loading {self.get_analysis_type()} probe for layer {layer_key} from {probe_info['path']}")
             print(f'Config: {self.config}')
             print(f'Probe {probe}')

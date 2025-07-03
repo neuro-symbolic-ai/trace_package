@@ -19,11 +19,18 @@ class LinearProbe(nn.Module):
             input_dim: int,
             config: Optional[LinguisticProbesConfig] = None,
             num_features: int = 8,
+            linguistic_target: Optional[str] = None,
             # device: str = "cpu"
     ):
         super().__init__()
         self.device = config.device if config else "cpu"
-        self.num_classes = num_features
+        self.linguistic_target = linguistic_target
+        if self.linguistic_target == 'pos':
+            num_features = config.num_pos_classes if config else num_features
+        elif self.linguistic_target == 'semantic_roles':
+            num_features = config.num_semantic_classes if config else num_features
+        else:
+            self.num_classes = num_features
 
         self.classifier = nn.Linear(input_dim, self.num_classes)
         self.to(self.device)
@@ -45,6 +52,7 @@ class MultiLabelProbe(nn.Module):
             input_dim: int,
             config: Optional[LinguisticProbesConfig] = None,
             num_features: int = 12,
+            linguistic_target: Optional[str] = None,
             # hidden_dim: int = 128,
             # lr: float = 1e-3,
             # epochs: int = 3,
@@ -56,10 +64,17 @@ class MultiLabelProbe(nn.Module):
         Initialize multi-label probe.
         """
         super().__init__()
+        self.linguistic_target = linguistic_target
         self.device = config.device if config else 'cpu'
         self.epochs = config.epochs if config else 3
         self.lr = config.lr if config else 1e-3
-        self.num_features = num_features
+        if self.linguistic_target == 'pos':
+            self.num_features = config.num_pos_classes if config else num_features
+        elif self.linguistic_target == 'semantic_roles':
+            self.num_features = config.num_semantic_classes if config else num_features
+        else:
+            # Default to num_features if no specific target is set
+            self.num_features = num_features
         self.class_weights = None
         self.input_dim = input_dim
         self.hidden_dim = config.hidden_dim if config else 128
