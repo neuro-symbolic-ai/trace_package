@@ -61,7 +61,7 @@ def load_requirements():
             if req.startswith('git+'):
                 # Convert Git URL to PEP 508 format
                 # git+https://github.com/nura-j/ABSynth_dataset.git -> ABSynth_dataset @ git+https://...
-                pkg_name = "ABSynth_dataset"
+                pkg_name = "absynth"
                 install_requires.append(f"{pkg_name} @ {req}")
             else:
                 install_requires.append(req)

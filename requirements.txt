@@ -12,5 +12,5 @@ tqdm>=4.67.0
 nltk>=3.9.0
 
 # Project packages
-git+https://github.com/nura-j/ABSynth_dataset.git
+absynth @ git+https://github.com/nura-j/ABSynth_dataset.git
 trace==0.1
