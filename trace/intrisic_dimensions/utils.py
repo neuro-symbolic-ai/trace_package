@@ -172,16 +172,6 @@ def compute_intrinsic_dimensions(
         layer_data = layer_data.reshape(layer_data.shape[0], -1)
         results[layer_name] = config.id_estimator.fit_transform(layer_data)
 
-    # for key, states in hidden_states.items():
-    #     # Move to device
-    #     states = states.to(device)
-    #     layer_data = layer_hidden.detach().cpu().numpy()
-    #     # Compute intrinsic dimension
-    #     id_result = nn_2.fit_transform(states)
-    #
-    #     # Store results
-    #     results[str(key)] = id_result.intrinsic_dimension_
-
     return results
 
 
