@@ -130,6 +130,10 @@ class TrainingCallbacks:
             print("Setting up linguistic probes analyzer...")
             # Determine number of POS categories
             self.config.probe_num_features = len(self.config.get_pos_categories())
+            print(f"Number of POS features: {self.config.probe_num_features}")
+            print(f"POS probe type: {self.config.probe_type}")
+            print(f"POS granularity: {self.config.pos_granularity}")
+
             probe_config = LinguisticProbesConfig(
                 probe_type=self.config.probe_type,
                 layer_indices=self.config.probe_layers,
@@ -180,8 +184,7 @@ class TrainingCallbacks:
                 self.probe_semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
                 print(f"Loaded semantic probes from: {self.config.semantic_probe_load_path}")
             else:
-                print("Warning: No semantic probe paths provided - analysis will skip layers without probes")
-                # self.track_semantic_probes = False  # Disable semantic tracking if no probes are loaded
+                print("Warning: No semantic probe paths provided - analysis will run rand probes")
                 self.probe_semantic_analyzer.load_probes(self.config.semantic_probe_load_path)
                 # self.probe_semantic_analyzer = None  # Set to None if no probes are loaded
         else:
