@@ -20,13 +20,19 @@ class ProbesVisualizer:
         # Set up matplotlib style to match original
         plt.style.use('seaborn-v0_8-whitegrid')
 
+        # # Create output directories
+        # if not log_dir:
+        #     log_dir = './plots/probe_analysis/probe_monitor_plots'
+        #
+        # self.save_dir = log_dir
+        # os.makedirs(self.save_dir, exist_ok=True)
         # Create output directories
         if not log_dir:
-            log_dir = './plots/probe_analysis/probe_monitor_plots'
-
-        self.save_dir = log_dir
-        os.makedirs(self.save_dir, exist_ok=True)
-
+            log_dir = './analysis_results'
+        self.pos_plots_dir = os.path.join(log_dir, 'pos_probe_analysis')
+        self.semantic_plots_dir = os.path.join(log_dir, 'semantic_probe_analysis')
+        os.makedirs(self.pos_plots_dir, exist_ok=True)
+        os.makedirs(self.semantic_plots_dir, exist_ok=True)
     def convert_confidence_data_to_original_format(
             self,
             confidence_data: Dict[int, Dict[Union[int, tuple], Dict[str, float]]],
@@ -88,9 +94,6 @@ class ProbesVisualizer:
             number_classes: int = 8,
             save_dir: Optional[str] = None
     ):
-        """
-        Enhanced plotting function that matches the original implementation.
-        """
         if save_dir is None:
             save_dir = self.save_dir
 
@@ -168,7 +171,7 @@ class ProbesVisualizer:
             show_plot: bool = False
     ):
         """
-        Comprehensive plot showing all tags across all layers (matches original).
+        Comprehensive plot showing all tags across all layers .
         """
         if label_names is None:
             label_names = [f"POS {i}" for i in range(number_of_classes)]
@@ -261,9 +264,11 @@ class ProbesVisualizer:
         # Get label names based on analysis type
         if analysis_type == 'pos':
             label_names = self._get_pos_label_names()
+            save_dir = self.pos_plots_dir
             number_classes = len(label_names)
         elif analysis_type == 'semantic':
             label_names = self._get_semantic_label_names()
+            save_dir = self.semantic_plots_dir
             number_classes = len(label_names)
         else:
             print(f"Unknown analysis type: {analysis_type}")
@@ -280,13 +285,12 @@ class ProbesVisualizer:
 
         print(f"Creating {analysis_type} plots with {len(probe_predictions)} layers and {len(label_names)} tags")
 
-        # Use original plotting functions
         self.plot_probe_predictions_enhanced(
             probe_predictions,
             label_names,
             model_name,
             number_classes,
-            self.save_dir
+            save_dir
         )
 
         self.plot_all_tags_all_layers(
@@ -294,7 +298,7 @@ class ProbesVisualizer:
             label_names,
             model_name,
             number_classes,
-            self.save_dir,
+            save_dir,
             show_plots
         )
 
