@@ -85,17 +85,20 @@ class Trainer:
     def _setup_optimizer(self):
         """Set up optimizer and learning rate scheduler."""
         optimizer_kwargs = {"lr": self.config.learning_rate}
-        if self.config.weight_decay:
+        if self.config.weight_decay and self.config.weight_decay > 0:
             optimizer_kwargs["weight_decay"] = self.config.weight_decay
+        else:
+            optimizer_kwargs["weight_decay"] = 0.0
 
         self.optimizer = optim.Adam(self.model.parameters(), **optimizer_kwargs)
+        self.scheduler = None
+
         # Set up learning rate scheduler if warmup is requested
         if self.config.warmup_steps:
-            print('passing warmup steps')
-            # self.scheduler = LambdaLR(
-            #     self.optimizer,
-            #     lr_lambda=lambda step: min(1.0, step / self.config.warmup_steps)
-            # )
+            self.scheduler = LambdaLR(
+                self.optimizer,
+                lr_lambda=lambda step: min(1.0, step / self.config.warmup_steps)
+            )
 
     def _setup_model_hooks(self):
         """Set up forward hooks to capture hidden states."""
@@ -142,7 +145,6 @@ class Trainer:
             self.training_history["train_loss"].append(epoch_loss)
             self.training_history["val_loss"].append(val_loss)
             self.training_history["epochs"].append(epoch + 1)
-
             # Log epoch results
             print(f"Epoch {epoch + 1} | Train Loss: {epoch_loss:.4f} | Val Loss: {val_loss:.4f}")
 

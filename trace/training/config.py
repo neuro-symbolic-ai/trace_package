@@ -31,7 +31,7 @@ class TrainingConfig:
     learning_rate: float = 1e-3
     batch_size: int = 128
     warmup_steps: Optional[int] = 1000
-    weight_decay: Optional[float] = 0#0.01
+    weight_decay: Optional[float] = 0.01
     task_mode: str = "next_token"  # mlm, next_token, seq2seq
     ignore_index: int = -100
 
